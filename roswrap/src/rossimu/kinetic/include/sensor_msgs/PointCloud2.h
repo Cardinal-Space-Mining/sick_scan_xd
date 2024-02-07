@@ -7,7 +7,7 @@
 #define SENSOR_MSGS_MESSAGE_POINTCLOUD2_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -64,7 +64,7 @@ struct PointCloud2_
    typedef uint32_t _width_type;
   _width_type width;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::sensor_msgs::PointField_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sensor_msgs::PointField_<ContainerAllocator> > >  _fields_type;
 #else
    typedef std::vector< ::sensor_msgs::PointField_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sensor_msgs::PointField_<ContainerAllocator> >::other >  _fields_type;
@@ -80,7 +80,7 @@ struct PointCloud2_
    typedef uint32_t _row_step_type;
   _row_step_type row_step;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t> >  _data_type;
 #else
    typedef std::vector<uint8_t, typename ContainerAllocator::template rebind<uint8_t>::other >  _data_type;

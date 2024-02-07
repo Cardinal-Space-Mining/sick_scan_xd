@@ -7,7 +7,7 @@
 #define SICK_SCAN_MESSAGE_SICKLOCRESULTPORTTESTCASEMSG_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -46,7 +46,7 @@ struct SickLocResultPortTestcaseMsg_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t> >  _binary_data_type;
 #else
    typedef std::vector<uint8_t, typename ContainerAllocator::template rebind<uint8_t>::other >  _binary_data_type;

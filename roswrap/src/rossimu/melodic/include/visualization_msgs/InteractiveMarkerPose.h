@@ -7,7 +7,7 @@
 #define VISUALIZATION_MSGS_MESSAGE_INTERACTIVEMARKERPOSE_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -49,7 +49,7 @@ struct InteractiveMarkerPose_
    typedef  ::geometry_msgs::Pose_<ContainerAllocator>  _pose_type;
   _pose_type pose;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
 #else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
@@ -261,7 +261,7 @@ struct Printer< ::visualization_msgs::InteractiveMarkerPose_<ContainerAllocator>
     s << std::endl;
     Printer< ::geometry_msgs::Pose_<ContainerAllocator> >::stream(s, indent + "  ", v.pose);
     s << indent << "name: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
 #else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);

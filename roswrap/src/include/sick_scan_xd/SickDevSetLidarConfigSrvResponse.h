@@ -7,7 +7,7 @@
 #define SICK_SCAN_MESSAGE_SICKDEVSETLIDARCONFIGSRVRESPONSE_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>

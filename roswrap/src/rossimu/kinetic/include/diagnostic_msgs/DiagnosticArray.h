@@ -7,7 +7,7 @@
 #define DIAGNOSTIC_MSGS_MESSAGE_DIAGNOSTICARRAY_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -44,7 +44,7 @@ struct DiagnosticArray_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::diagnostic_msgs::DiagnosticStatus_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::diagnostic_msgs::DiagnosticStatus_<ContainerAllocator> > >  _status_type;
 #else
    typedef std::vector< ::diagnostic_msgs::DiagnosticStatus_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::diagnostic_msgs::DiagnosticStatus_<ContainerAllocator> >::other >  _status_type;

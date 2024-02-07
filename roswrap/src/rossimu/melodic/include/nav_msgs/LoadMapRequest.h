@@ -7,7 +7,7 @@
 #define NAV_MSGS_MESSAGE_LOADMAPREQUEST_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -37,7 +37,7 @@ struct LoadMapRequest_
 
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _map_url_type;
 #else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _map_url_type;
@@ -196,7 +196,7 @@ struct Printer< ::nav_msgs::LoadMapRequest_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::nav_msgs::LoadMapRequest_<ContainerAllocator>& v)
   {
     s << indent << "map_url: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.map_url);
 #else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.map_url);

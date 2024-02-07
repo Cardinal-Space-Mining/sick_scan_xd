@@ -7,7 +7,7 @@
 #define GEOMETRY_MSGS_MESSAGE_TRANSFORMSTAMPED_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -46,7 +46,7 @@ struct TransformStamped_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _child_frame_id_type;
 #else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _child_frame_id_type;
@@ -256,7 +256,7 @@ struct Printer< ::geometry_msgs::TransformStamped_<ContainerAllocator> >
     s << std::endl;
     Printer< ::std_msgs::Header_<ContainerAllocator> >::stream(s, indent + "  ", v.header);
     s << indent << "child_frame_id: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.child_frame_id);
 #else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.child_frame_id);

@@ -7,7 +7,7 @@
 #define SENSOR_MSGS_MESSAGE_MULTIECHOLASERSCAN_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -82,14 +82,14 @@ struct MultiEchoLaserScan_
    typedef float _range_max_type;
   _range_max_type range_max;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::sensor_msgs::LaserEcho_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sensor_msgs::LaserEcho_<ContainerAllocator> > >  _ranges_type;
 #else
    typedef std::vector< ::sensor_msgs::LaserEcho_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sensor_msgs::LaserEcho_<ContainerAllocator> >::other >  _ranges_type;
 #endif
   _ranges_type ranges;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::sensor_msgs::LaserEcho_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sensor_msgs::LaserEcho_<ContainerAllocator> > >  _intensities_type;
 #else
    typedef std::vector< ::sensor_msgs::LaserEcho_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sensor_msgs::LaserEcho_<ContainerAllocator> >::other >  _intensities_type;

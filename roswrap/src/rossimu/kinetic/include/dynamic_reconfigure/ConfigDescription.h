@@ -7,7 +7,7 @@
 #define DYNAMIC_RECONFIGURE_MESSAGE_CONFIGDESCRIPTION_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -43,7 +43,7 @@ struct ConfigDescription_
 
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::dynamic_reconfigure::Group_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::dynamic_reconfigure::Group_<ContainerAllocator> > >  _groups_type;
 #else
    typedef std::vector< ::dynamic_reconfigure::Group_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::dynamic_reconfigure::Group_<ContainerAllocator> >::other >  _groups_type;

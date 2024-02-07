@@ -7,7 +7,7 @@
 #define VISUALIZATION_MSGS_MESSAGE_INTERACTIVEMARKERUPDATE_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -49,7 +49,7 @@ struct InteractiveMarkerUpdate_
 
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _server_id_type;
 #else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _server_id_type;
@@ -62,21 +62,21 @@ struct InteractiveMarkerUpdate_
    typedef uint8_t _type_type;
   _type_type type;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> > >  _markers_type;
 #else
    typedef std::vector< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> >::other >  _markers_type;
 #endif
   _markers_type markers;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::visualization_msgs::InteractiveMarkerPose_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::visualization_msgs::InteractiveMarkerPose_<ContainerAllocator> > >  _poses_type;
 #else
    typedef std::vector< ::visualization_msgs::InteractiveMarkerPose_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::visualization_msgs::InteractiveMarkerPose_<ContainerAllocator> >::other >  _poses_type;
 #endif
   _poses_type poses;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > > >  _erases_type;;
 #else
    typedef std::vector<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > , typename ContainerAllocator::template rebind<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::other >  _erases_type;
@@ -570,7 +570,7 @@ struct Printer< ::visualization_msgs::InteractiveMarkerUpdate_<ContainerAllocato
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::visualization_msgs::InteractiveMarkerUpdate_<ContainerAllocator>& v)
   {
     s << indent << "server_id: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.server_id);
 #else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.server_id);
@@ -599,7 +599,7 @@ struct Printer< ::visualization_msgs::InteractiveMarkerUpdate_<ContainerAllocato
     for (size_t i = 0; i < v.erases.size(); ++i)
     {
       s << indent << "  erases[" << i << "]: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
       Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.erases[i]);
 #else
       Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.erases[i]);

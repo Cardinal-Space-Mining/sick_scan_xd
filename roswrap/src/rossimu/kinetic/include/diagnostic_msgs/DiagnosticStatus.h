@@ -7,7 +7,7 @@
 #define DIAGNOSTIC_MSGS_MESSAGE_DIAGNOSTICSTATUS_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -49,28 +49,28 @@ namespace diagnostic_msgs
 		typedef int8_t _level_type;
 		_level_type level;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 		typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
 #else
 		typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
 #endif
 		_name_type name;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 		typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _message_type;
 #else
 		typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _message_type;
 #endif
 		_message_type message;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 		typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _hardware_id_type;
 #else
 		typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _hardware_id_type;
 #endif
 		_hardware_id_type hardware_id;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 		typedef std::vector< ::diagnostic_msgs::KeyValue_<ContainerAllocator>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::diagnostic_msgs::KeyValue_<ContainerAllocator> > >  _values_type;
 #else
 		typedef std::vector< ::diagnostic_msgs::KeyValue_<ContainerAllocator>, typename ContainerAllocator::template rebind< ::diagnostic_msgs::KeyValue_<ContainerAllocator> >::other >  _values_type;
@@ -254,19 +254,19 @@ namespace roswrap
 				s << indent << "level: ";
 				Printer<int8_t>::stream(s, indent + "  ", v.level);
 				s << indent << "name: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 				Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
 #else
 				Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);
 #endif
 				s << indent << "message: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 				Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.message);
 #else
 				Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.message);
 #endif
 				s << indent << "hardware_id: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 				Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.hardware_id);
 #else
 				Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.hardware_id);

@@ -7,7 +7,7 @@
 #define GEOMETRY_MSGS_MESSAGE_POLYGON_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -38,7 +38,7 @@ struct Polygon_
 
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::geometry_msgs::Point32_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::geometry_msgs::Point32_<ContainerAllocator> > >  _points_type;
 #else
    typedef std::vector< ::geometry_msgs::Point32_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::geometry_msgs::Point32_<ContainerAllocator> >::other >  _points_type;

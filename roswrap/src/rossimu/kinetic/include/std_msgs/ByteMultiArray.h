@@ -7,7 +7,7 @@
 #define STD_MSGS_MESSAGE_BYTEMULTIARRAY_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -43,7 +43,7 @@ struct ByteMultiArray_
    typedef  ::std_msgs::MultiArrayLayout_<ContainerAllocator>  _layout_type;
   _layout_type layout;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<int8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int8_t> >  _data_type;
 #else
    typedef std::vector<int8_t, typename ContainerAllocator::template rebind<int8_t>::other >  _data_type;

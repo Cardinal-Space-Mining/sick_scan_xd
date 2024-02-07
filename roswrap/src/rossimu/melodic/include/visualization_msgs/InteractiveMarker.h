@@ -7,7 +7,7 @@
 #define VISUALIZATION_MSGS_MESSAGE_INTERACTIVEMARKER_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -59,14 +59,14 @@ struct InteractiveMarker_
    typedef  ::geometry_msgs::Pose_<ContainerAllocator>  _pose_type;
   _pose_type pose;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
 #else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
 #endif
   _name_type name;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _description_type;
 #else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _description_type;
@@ -76,14 +76,14 @@ struct InteractiveMarker_
    typedef float _scale_type;
   _scale_type scale;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::visualization_msgs::MenuEntry_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::visualization_msgs::MenuEntry_<ContainerAllocator> > >  _menu_entries_type;
 #else
    typedef std::vector< ::visualization_msgs::MenuEntry_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::visualization_msgs::MenuEntry_<ContainerAllocator> >::other >  _menu_entries_type;
 #endif
   _menu_entries_type menu_entries;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::visualization_msgs::InteractiveMarkerControl_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::visualization_msgs::InteractiveMarkerControl_<ContainerAllocator> > >  _controls_type;
 #else
    typedef std::vector< ::visualization_msgs::InteractiveMarkerControl_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::visualization_msgs::InteractiveMarkerControl_<ContainerAllocator> >::other >  _controls_type;
@@ -523,13 +523,13 @@ struct Printer< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> >
     s << std::endl;
     Printer< ::geometry_msgs::Pose_<ContainerAllocator> >::stream(s, indent + "  ", v.pose);
     s << indent << "name: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
 #else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);
 #endif
     s << indent << "description: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.description);
 #else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.description);

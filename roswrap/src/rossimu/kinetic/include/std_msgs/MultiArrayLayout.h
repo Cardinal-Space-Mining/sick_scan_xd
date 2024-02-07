@@ -7,7 +7,7 @@
 #define STD_MSGS_MESSAGE_MULTIARRAYLAYOUT_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -40,7 +40,7 @@ struct MultiArrayLayout_
 
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::std_msgs::MultiArrayDimension_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::std_msgs::MultiArrayDimension_<ContainerAllocator> > >  _dim_type;
 #else
    typedef std::vector< ::std_msgs::MultiArrayDimension_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::std_msgs::MultiArrayDimension_<ContainerAllocator> >::other >  _dim_type;

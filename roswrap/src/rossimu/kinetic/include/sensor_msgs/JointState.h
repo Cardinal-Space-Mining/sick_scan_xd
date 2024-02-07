@@ -7,7 +7,7 @@
 #define SENSOR_MSGS_MESSAGE_JOINTSTATE_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -49,28 +49,28 @@ struct JointState_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > > >  _name_type;;
 #else
    typedef std::vector<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > , typename ContainerAllocator::template rebind<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::other >  _name_type;
 #endif
   _name_type name;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<double, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<double> >  _position_type;
 #else
    typedef std::vector<double, typename ContainerAllocator::template rebind<double>::other >  _position_type;
 #endif
   _position_type position;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<double, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<double> >  _velocity_type;
 #else
    typedef std::vector<double, typename ContainerAllocator::template rebind<double>::other >  _velocity_type;
 #endif
   _velocity_type velocity;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<double, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<double> >  _effort_type;
 #else
    typedef std::vector<double, typename ContainerAllocator::template rebind<double>::other >  _effort_type;
@@ -270,7 +270,7 @@ struct Printer< ::sensor_msgs::JointState_<ContainerAllocator> >
     for (size_t i = 0; i < v.name.size(); ++i)
     {
       s << indent << "  name[" << i << "]: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
       Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name[i]);
 #else
       Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name[i]);

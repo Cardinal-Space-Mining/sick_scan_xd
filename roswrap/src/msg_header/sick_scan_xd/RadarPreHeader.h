@@ -7,7 +7,7 @@
 #define SICK_SCAN_MESSAGE_RADARPREHEADER_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -61,7 +61,7 @@ struct RadarPreHeader_
    typedef  ::sick_scan_xd::RadarPreHeaderMeasurementParam1Block_<ContainerAllocator>  _radarpreheadermeasurementparam1block_type;
   _radarpreheadermeasurementparam1block_type radarpreheadermeasurementparam1block;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::sick_scan_xd::RadarPreHeaderEncoderBlock_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sick_scan_xd::RadarPreHeaderEncoderBlock_<ContainerAllocator> > >  _radarpreheaderarrayencoderblock_type;
 #else
    typedef std::vector< ::sick_scan_xd::RadarPreHeaderEncoderBlock_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sick_scan_xd::RadarPreHeaderEncoderBlock_<ContainerAllocator> >::other >  _radarpreheaderarrayencoderblock_type;

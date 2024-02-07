@@ -7,7 +7,7 @@
 #define SICK_SCAN_MESSAGE_SICKLOCCOLATELEGRAMMSG_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -50,14 +50,14 @@ struct SickLocColaTelegramMsg_
    typedef int32_t _command_type_type;
   _command_type_type command_type;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _command_name_type;
 #else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _command_name_type;
 #endif
   _command_name_type command_name;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > > >  _parameter_type;;
 #else
    typedef std::vector<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > , typename ContainerAllocator::template rebind<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::other >  _parameter_type;
@@ -251,7 +251,7 @@ struct Printer< ::sick_scan_xd::SickLocColaTelegramMsg_<ContainerAllocator> >
     s << indent << "command_type: ";
     Printer<int32_t>::stream(s, indent + "  ", v.command_type);
     s << indent << "command_name: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.command_name);
 #else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.command_name);
@@ -260,7 +260,7 @@ struct Printer< ::sick_scan_xd::SickLocColaTelegramMsg_<ContainerAllocator> >
     for (size_t i = 0; i < v.parameter.size(); ++i)
     {
       s << indent << "  parameter[" << i << "]: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
       Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.parameter[i]);
 #else
       Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.parameter[i]);

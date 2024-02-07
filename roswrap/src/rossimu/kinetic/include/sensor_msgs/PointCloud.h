@@ -7,7 +7,7 @@
 #define SENSOR_MSGS_MESSAGE_POINTCLOUD_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -47,14 +47,14 @@ struct PointCloud_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::geometry_msgs::Point32_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::geometry_msgs::Point32_<ContainerAllocator> > >  _points_type;
 #else
    typedef std::vector< ::geometry_msgs::Point32_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::geometry_msgs::Point32_<ContainerAllocator> >::other >  _points_type;
 #endif
   _points_type points;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector< ::sensor_msgs::ChannelFloat32_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sensor_msgs::ChannelFloat32_<ContainerAllocator> > >  _channels_type;
 #else
    typedef std::vector< ::sensor_msgs::ChannelFloat32_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sensor_msgs::ChannelFloat32_<ContainerAllocator> >::other >  _channels_type;

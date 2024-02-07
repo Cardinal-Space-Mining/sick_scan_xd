@@ -7,7 +7,7 @@
 #define NAV_MSGS_MESSAGE_OCCUPANCYGRID_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -49,7 +49,7 @@ struct OccupancyGrid_
    typedef  ::nav_msgs::MapMetaData_<ContainerAllocator>  _info_type;
   _info_type info;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::vector<int8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int8_t> >  _data_type;
 #else
    typedef std::vector<int8_t, typename ContainerAllocator::template rebind<int8_t>::other >  _data_type;

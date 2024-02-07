@@ -7,7 +7,7 @@
 #define SICK_SCAN_MESSAGE_SICKDEVSETLIDARCONFIGSRVREQUEST_H
 
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
 #include <memory>
 #endif
 #include <string>
@@ -90,7 +90,7 @@ struct SickDevSetLidarConfigSrvRequest_
    typedef uint8_t _upsidedown_type;
   _upsidedown_type upsidedown;
 
-#if _HAS_CXX20
+#if __cplusplus > 201703L
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _ip_type;
 #else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _ip_type;
@@ -328,7 +328,7 @@ struct Printer< ::sick_scan_xd::SickDevSetLidarConfigSrvRequest_<ContainerAlloca
     s << indent << "upsidedown: ";
     Printer<uint8_t>::stream(s, indent + "  ", v.upsidedown);
     s << indent << "ip: ";
-#if _HAS_CXX20
+#if __cplusplus > 201703L
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.ip);
 #else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.ip);
