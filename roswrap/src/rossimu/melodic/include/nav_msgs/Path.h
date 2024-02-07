@@ -7,6 +7,9 @@
 #define NAV_MSGS_MESSAGE_PATH_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -41,7 +44,11 @@ struct Path_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
+#if _HAS_CXX20
+   typedef std::vector< ::geometry_msgs::PoseStamped_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::geometry_msgs::PoseStamped_<ContainerAllocator> > >  _poses_type;
+#else
    typedef std::vector< ::geometry_msgs::PoseStamped_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::geometry_msgs::PoseStamped_<ContainerAllocator> >::other >  _poses_type;
+#endif
   _poses_type poses;
 
 

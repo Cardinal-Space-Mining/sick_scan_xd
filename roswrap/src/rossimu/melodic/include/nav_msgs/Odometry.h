@@ -7,6 +7,9 @@
 #define NAV_MSGS_MESSAGE_ODOMETRY_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -46,7 +49,11 @@ struct Odometry_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _child_frame_id_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _child_frame_id_type;
+#endif
   _child_frame_id_type child_frame_id;
 
    typedef  ::geometry_msgs::PoseWithCovariance_<ContainerAllocator>  _pose_type;
@@ -300,7 +307,11 @@ struct Printer< ::nav_msgs::Odometry_<ContainerAllocator> >
     s << std::endl;
     Printer< ::std_msgs::Header_<ContainerAllocator> >::stream(s, indent + "  ", v.header);
     s << indent << "child_frame_id: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.child_frame_id);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.child_frame_id);
+#endif
     s << indent << "pose: ";
     s << std::endl;
     Printer< ::geometry_msgs::PoseWithCovariance_<ContainerAllocator> >::stream(s, indent + "  ", v.pose);

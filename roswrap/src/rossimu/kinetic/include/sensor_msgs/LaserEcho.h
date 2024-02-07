@@ -7,6 +7,9 @@
 #define SENSOR_MSGS_MESSAGE_LASERECHO_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -34,7 +37,11 @@ struct LaserEcho_
 
 
 
+#if _HAS_CXX20
+   typedef std::vector<float, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<float> >  _echoes_type;
+#else
    typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other >  _echoes_type;
+#endif
   _echoes_type echoes;
 
 

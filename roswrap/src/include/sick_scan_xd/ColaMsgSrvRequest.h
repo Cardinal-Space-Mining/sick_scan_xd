@@ -7,6 +7,9 @@
 #define SICK_SCAN_MESSAGE_COLAMSGSRVREQUEST_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -34,7 +37,11 @@ struct ColaMsgSrvRequest_
 
 
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _request_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _request_type;
+#endif
   _request_type request;
 
 
@@ -197,7 +204,11 @@ struct Printer< ::sick_scan_xd::ColaMsgSrvRequest_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::sick_scan_xd::ColaMsgSrvRequest_<ContainerAllocator>& v)
   {
     s << indent << "request: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.request);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.request);
+#endif
   }
 };
 

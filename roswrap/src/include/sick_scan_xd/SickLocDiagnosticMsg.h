@@ -7,6 +7,9 @@
 #define SICK_SCAN_MESSAGE_SICKLOCDIAGNOSTICMSG_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -45,7 +48,11 @@ struct SickLocDiagnosticMsg_
    typedef int32_t _error_code_type;
   _error_code_type error_code;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _message_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _message_type;
+#endif
   _message_type message;
 
 
@@ -228,7 +235,11 @@ struct Printer< ::sick_scan_xd::SickLocDiagnosticMsg_<ContainerAllocator> >
     s << indent << "error_code: ";
     Printer<int32_t>::stream(s, indent + "  ", v.error_code);
     s << indent << "message: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.message);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.message);
+#endif
   }
 };
 

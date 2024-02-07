@@ -7,6 +7,9 @@
 #define VISUALIZATION_MSGS_MESSAGE_INTERACTIVEMARKERINIT_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -39,13 +42,21 @@ struct InteractiveMarkerInit_
 
 
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _server_id_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _server_id_type;
+#endif
   _server_id_type server_id;
 
    typedef uint64_t _seq_num_type;
   _seq_num_type seq_num;
 
+#if _HAS_CXX20
+   typedef std::vector< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> > >  _markers_type;
+#else
    typedef std::vector< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::visualization_msgs::InteractiveMarker_<ContainerAllocator> >::other >  _markers_type;
+#endif
   _markers_type markers;
 
 
@@ -484,7 +495,11 @@ struct Printer< ::visualization_msgs::InteractiveMarkerInit_<ContainerAllocator>
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::visualization_msgs::InteractiveMarkerInit_<ContainerAllocator>& v)
   {
     s << indent << "server_id: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.server_id);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.server_id);
+#endif
     s << indent << "seq_num: ";
     Printer<uint64_t>::stream(s, indent + "  ", v.seq_num);
     s << indent << "markers[]" << std::endl;

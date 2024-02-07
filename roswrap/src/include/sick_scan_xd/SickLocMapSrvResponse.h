@@ -7,6 +7,9 @@
 #define SICK_SCAN_MESSAGE_SICKLOCMAPSRVRESPONSE_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -36,7 +39,11 @@ struct SickLocMapSrvResponse_
 
 
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _map_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _map_type;
+#endif
   _map_type map;
 
    typedef uint8_t _success_type;
@@ -200,7 +207,11 @@ struct Printer< ::sick_scan_xd::SickLocMapSrvResponse_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::sick_scan_xd::SickLocMapSrvResponse_<ContainerAllocator>& v)
   {
     s << indent << "map: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.map);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.map);
+#endif
     s << indent << "success: ";
     Printer<uint8_t>::stream(s, indent + "  ", v.success);
   }

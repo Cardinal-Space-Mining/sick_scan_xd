@@ -7,6 +7,9 @@
 #define VISUALIZATION_MSGS_MESSAGE_IMAGEMARKER_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -67,7 +70,11 @@ struct ImageMarker_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _ns_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _ns_type;
+#endif
   _ns_type ns;
 
    typedef int32_t _id_type;
@@ -97,10 +104,18 @@ struct ImageMarker_
    typedef ros::Duration _lifetime_type;
   _lifetime_type lifetime;
 
+#if _HAS_CXX20
+   typedef std::vector< ::geometry_msgs::Point_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::geometry_msgs::Point_<ContainerAllocator> > >  _points_type;
+#else
    typedef std::vector< ::geometry_msgs::Point_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::geometry_msgs::Point_<ContainerAllocator> >::other >  _points_type;
+#endif
   _points_type points;
 
+#if _HAS_CXX20
+   typedef std::vector< ::std_msgs::ColorRGBA_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::std_msgs::ColorRGBA_<ContainerAllocator> > >  _outline_colors_type;
+#else
    typedef std::vector< ::std_msgs::ColorRGBA_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::std_msgs::ColorRGBA_<ContainerAllocator> >::other >  _outline_colors_type;
+#endif
   _outline_colors_type outline_colors;
 
 
@@ -377,7 +392,11 @@ struct Printer< ::visualization_msgs::ImageMarker_<ContainerAllocator> >
     s << std::endl;
     Printer< ::std_msgs::Header_<ContainerAllocator> >::stream(s, indent + "  ", v.header);
     s << indent << "ns: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.ns);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.ns);
+#endif
     s << indent << "id: ";
     Printer<int32_t>::stream(s, indent + "  ", v.id);
     s << indent << "type: ";

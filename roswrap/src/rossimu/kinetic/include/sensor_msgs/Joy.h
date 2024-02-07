@@ -7,6 +7,9 @@
 #define SENSOR_MSGS_MESSAGE_JOY_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -42,10 +45,18 @@ struct Joy_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
+#if _HAS_CXX20
+   typedef std::vector<float, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<float> >  _axes_type;
+#else
    typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other >  _axes_type;
+#endif
   _axes_type axes;
 
+#if _HAS_CXX20
+   typedef std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t> >  _buttons_type;
+#else
    typedef std::vector<int32_t, typename ContainerAllocator::template rebind<int32_t>::other >  _buttons_type;
+#endif
   _buttons_type buttons;
 
 

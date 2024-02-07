@@ -7,6 +7,9 @@
 #define DIAGNOSTIC_MSGS_MESSAGE_ADDDIAGNOSTICSRESPONSE_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -39,7 +42,11 @@ struct AddDiagnosticsResponse_
    typedef uint8_t _success_type;
   _success_type success;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _message_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _message_type;
+#endif
   _message_type message;
 
 
@@ -194,7 +201,11 @@ struct Printer< ::diagnostic_msgs::AddDiagnosticsResponse_<ContainerAllocator> >
     s << indent << "success: ";
     Printer<uint8_t>::stream(s, indent + "  ", v.success);
     s << indent << "message: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.message);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.message);
+#endif
   }
 };
 

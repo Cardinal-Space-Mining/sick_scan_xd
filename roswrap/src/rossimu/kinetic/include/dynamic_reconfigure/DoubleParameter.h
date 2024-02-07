@@ -7,6 +7,9 @@
 #define DYNAMIC_RECONFIGURE_MESSAGE_DOUBLEPARAMETER_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -36,7 +39,11 @@ struct DoubleParameter_
 
 
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
+#endif
   _name_type name;
 
    typedef double _value_type;
@@ -184,7 +191,11 @@ struct Printer< ::dynamic_reconfigure::DoubleParameter_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::dynamic_reconfigure::DoubleParameter_<ContainerAllocator>& v)
   {
     s << indent << "name: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);
+#endif
     s << indent << "value: ";
     Printer<double>::stream(s, indent + "  ", v.value);
   }

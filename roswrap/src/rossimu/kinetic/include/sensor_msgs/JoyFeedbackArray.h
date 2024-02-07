@@ -7,6 +7,9 @@
 #define SENSOR_MSGS_MESSAGE_JOYFEEDBACKARRAY_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -35,7 +38,11 @@ struct JoyFeedbackArray_
 
 
 
+#if _HAS_CXX20
+   typedef std::vector< ::sensor_msgs::JoyFeedback_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sensor_msgs::JoyFeedback_<ContainerAllocator> > >  _array_type;
+#else
    typedef std::vector< ::sensor_msgs::JoyFeedback_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sensor_msgs::JoyFeedback_<ContainerAllocator> >::other >  _array_type;
+#endif
   _array_type array;
 
 

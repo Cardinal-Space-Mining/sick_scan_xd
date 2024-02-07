@@ -7,6 +7,9 @@
 #define SENSOR_MSGS_MESSAGE_LASERSCAN_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -77,10 +80,18 @@ struct LaserScan_
    typedef float _range_max_type;
   _range_max_type range_max;
 
+#if _HAS_CXX20
+   typedef std::vector<float, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<float> >  _ranges_type;
+#else
    typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other >  _ranges_type;
+#endif
   _ranges_type ranges;
 
+#if _HAS_CXX20
+   typedef std::vector<float, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<float> >  _intensities_type;
+#else
    typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other >  _intensities_type;
+#endif
   _intensities_type intensities;
 
 

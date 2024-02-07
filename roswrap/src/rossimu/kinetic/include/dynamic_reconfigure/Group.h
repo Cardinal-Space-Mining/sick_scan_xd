@@ -7,6 +7,9 @@
 #define DYNAMIC_RECONFIGURE_MESSAGE_GROUP_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -43,13 +46,25 @@ struct Group_
 
 
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
+#endif
   _name_type name;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _type_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _type_type;
+#endif
   _type_type type;
 
+#if _HAS_CXX20
+   typedef std::vector< ::dynamic_reconfigure::ParamDescription_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::dynamic_reconfigure::ParamDescription_<ContainerAllocator> > >  _parameters_type;
+#else
    typedef std::vector< ::dynamic_reconfigure::ParamDescription_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::dynamic_reconfigure::ParamDescription_<ContainerAllocator> >::other >  _parameters_type;
+#endif
   _parameters_type parameters;
 
    typedef int32_t _parent_type;
@@ -214,9 +229,17 @@ struct Printer< ::dynamic_reconfigure::Group_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::dynamic_reconfigure::Group_<ContainerAllocator>& v)
   {
     s << indent << "name: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);
+#endif
     s << indent << "type: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.type);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.type);
+#endif
     s << indent << "parameters[]" << std::endl;
     for (size_t i = 0; i < v.parameters.size(); ++i)
     {

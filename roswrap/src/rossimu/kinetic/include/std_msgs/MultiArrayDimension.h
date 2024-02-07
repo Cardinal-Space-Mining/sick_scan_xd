@@ -7,6 +7,9 @@
 #define STD_MSGS_MESSAGE_MULTIARRAYDIMENSION_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -38,7 +41,11 @@ struct MultiArrayDimension_
 
 
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _label_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _label_type;
+#endif
   _label_type label;
 
    typedef uint32_t _size_type;
@@ -191,7 +198,11 @@ struct Printer< ::std_msgs::MultiArrayDimension_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::std_msgs::MultiArrayDimension_<ContainerAllocator>& v)
   {
     s << indent << "label: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.label);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.label);
+#endif
     s << indent << "size: ";
     Printer<uint32_t>::stream(s, indent + "  ", v.size);
     s << indent << "stride: ";

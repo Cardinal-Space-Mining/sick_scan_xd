@@ -7,6 +7,9 @@
 #define SICK_SCAN_MESSAGE_SICKLDMRSOBJECTARRAY_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -41,7 +44,11 @@ struct SickLdmrsObjectArray_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
+#if _HAS_CXX20
+   typedef std::vector< ::sick_scan_xd::SickLdmrsObject_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sick_scan_xd::SickLdmrsObject_<ContainerAllocator> > >  _objects_type;
+#else
    typedef std::vector< ::sick_scan_xd::SickLdmrsObject_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sick_scan_xd::SickLdmrsObject_<ContainerAllocator> >::other >  _objects_type;
+#endif
   _objects_type objects;
 
 

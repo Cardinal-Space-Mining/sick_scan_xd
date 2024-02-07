@@ -7,6 +7,9 @@
 #define SENSOR_MSGS_MESSAGE_CAMERAINFO_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -75,10 +78,18 @@ struct CameraInfo_
    typedef uint32_t _width_type;
   _width_type width;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _distortion_model_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _distortion_model_type;
+#endif
   _distortion_model_type distortion_model;
 
+#if _HAS_CXX20
+   typedef std::vector<double, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<double> >  _D_type;
+#else
    typedef std::vector<double, typename ContainerAllocator::template rebind<double>::other >  _D_type;
+#endif
   _D_type D;
 
    typedef std::array<double, 9>  _K_type;
@@ -426,7 +437,11 @@ struct Printer< ::sensor_msgs::CameraInfo_<ContainerAllocator> >
     s << indent << "width: ";
     Printer<uint32_t>::stream(s, indent + "  ", v.width);
     s << indent << "distortion_model: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.distortion_model);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.distortion_model);
+#endif
     s << indent << "D[]" << std::endl;
     for (size_t i = 0; i < v.D.size(); ++i)
     {

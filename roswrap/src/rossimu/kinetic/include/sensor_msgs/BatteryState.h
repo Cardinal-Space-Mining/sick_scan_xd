@@ -7,6 +7,9 @@
 #define SENSOR_MSGS_MESSAGE_BATTERYSTATE_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -94,13 +97,25 @@ struct BatteryState_
    typedef uint8_t _present_type;
   _present_type present;
 
+#if _HAS_CXX20
+   typedef std::vector<float, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<float> >  _cell_voltage_type;
+#else
    typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other >  _cell_voltage_type;
+#endif
   _cell_voltage_type cell_voltage;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _location_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _location_type;
+#endif
   _location_type location;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _serial_number_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _serial_number_type;
+#endif
   _serial_number_type serial_number;
 
 
@@ -414,9 +429,17 @@ struct Printer< ::sensor_msgs::BatteryState_<ContainerAllocator> >
       Printer<float>::stream(s, indent + "  ", v.cell_voltage[i]);
     }
     s << indent << "location: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.location);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.location);
+#endif
     s << indent << "serial_number: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.serial_number);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.serial_number);
+#endif
   }
 };
 

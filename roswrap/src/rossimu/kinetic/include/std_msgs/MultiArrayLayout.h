@@ -7,6 +7,9 @@
 #define STD_MSGS_MESSAGE_MULTIARRAYLAYOUT_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -37,7 +40,11 @@ struct MultiArrayLayout_
 
 
 
+#if _HAS_CXX20
+   typedef std::vector< ::std_msgs::MultiArrayDimension_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::std_msgs::MultiArrayDimension_<ContainerAllocator> > >  _dim_type;
+#else
    typedef std::vector< ::std_msgs::MultiArrayDimension_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::std_msgs::MultiArrayDimension_<ContainerAllocator> >::other >  _dim_type;
+#endif
   _dim_type dim;
 
    typedef uint32_t _data_offset_type;

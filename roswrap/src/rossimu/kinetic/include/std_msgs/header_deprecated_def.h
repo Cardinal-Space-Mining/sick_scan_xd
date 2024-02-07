@@ -26,6 +26,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if _HAS_CXX20
+#include <memory>
+#endif
+
 #ifndef STD_MSGS_INCLUDING_HEADER_DEPRECATED_DEF
 #error("Do not include this file directly.  Instead, include std_msgs/Header.h")
 #endif
@@ -240,7 +244,11 @@ struct Printer< ::roslib::Header_<ContainerAllocator> >
     s << indent << "stamp: ";
     Printer<ros::Time>::stream(s, indent + "  ", v.stamp);
     s << indent << "frame_id: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.frame_id);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.frame_id);
+#endif
   }
 };
 

@@ -7,6 +7,9 @@
 #define NAV_MSGS_MESSAGE_GRIDCELLS_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -51,7 +54,11 @@ struct GridCells_
    typedef float _cell_height_type;
   _cell_height_type cell_height;
 
+#if _HAS_CXX20
+   typedef std::vector< ::geometry_msgs::Point_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::geometry_msgs::Point_<ContainerAllocator> > >  _cells_type;
+#else
    typedef std::vector< ::geometry_msgs::Point_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::geometry_msgs::Point_<ContainerAllocator> >::other >  _cells_type;
+#endif
   _cells_type cells;
 
 

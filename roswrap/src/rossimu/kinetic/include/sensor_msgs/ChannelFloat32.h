@@ -7,6 +7,9 @@
 #define SENSOR_MSGS_MESSAGE_CHANNELFLOAT32_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -36,10 +39,18 @@ struct ChannelFloat32_
 
 
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
+#endif
   _name_type name;
 
+#if _HAS_CXX20
+   typedef std::vector<float, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<float> >  _values_type;
+#else
    typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other >  _values_type;
+#endif
   _values_type values;
 
 
@@ -206,7 +217,11 @@ struct Printer< ::sensor_msgs::ChannelFloat32_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::sensor_msgs::ChannelFloat32_<ContainerAllocator>& v)
   {
     s << indent << "name: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);
+#endif
     s << indent << "values[]" << std::endl;
     for (size_t i = 0; i < v.values.size(); ++i)
     {

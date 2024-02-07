@@ -7,6 +7,9 @@
 #define SICK_SCAN_MESSAGE_SICKLOCSETMAPSRVREQUEST_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -34,7 +37,11 @@ struct SickLocSetMapSrvRequest_
 
 
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _mapfilename_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _mapfilename_type;
+#endif
   _mapfilename_type mapfilename;
 
 
@@ -199,7 +206,11 @@ struct Printer< ::sick_scan_xd::SickLocSetMapSrvRequest_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::sick_scan_xd::SickLocSetMapSrvRequest_<ContainerAllocator>& v)
   {
     s << indent << "mapfilename: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.mapfilename);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.mapfilename);
+#endif
   }
 };
 

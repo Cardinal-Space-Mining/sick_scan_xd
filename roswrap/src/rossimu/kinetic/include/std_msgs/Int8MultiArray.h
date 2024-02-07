@@ -7,6 +7,9 @@
 #define STD_MSGS_MESSAGE_INT8MULTIARRAY_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -40,7 +43,11 @@ struct Int8MultiArray_
    typedef  ::std_msgs::MultiArrayLayout_<ContainerAllocator>  _layout_type;
   _layout_type layout;
 
+#if _HAS_CXX20
+   typedef std::vector<int8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int8_t> >  _data_type;
+#else
    typedef std::vector<int8_t, typename ContainerAllocator::template rebind<int8_t>::other >  _data_type;
+#endif
   _data_type data;
 
 

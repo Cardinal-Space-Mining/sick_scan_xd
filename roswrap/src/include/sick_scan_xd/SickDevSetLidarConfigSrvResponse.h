@@ -7,6 +7,9 @@
 #define SICK_SCAN_MESSAGE_SICKDEVSETLIDARCONFIGSRVRESPONSE_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>

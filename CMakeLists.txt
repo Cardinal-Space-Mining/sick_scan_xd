@@ -66,6 +66,9 @@ endif()
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
+if(CMAKE_CXX_STANDARD GREATER 14)
+    add_compile_options(-DBOOST_NO_AUTO_PTR)
+endif()
 
 if(${BUILD_DEBUG_TARGET} OR BUILD_DEBUG_TARGET EQUAL ON)
         set(CMAKE_BUILD_TYPE Debug) #uncomment to activate debug mode for lib_sick as well

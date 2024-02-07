@@ -7,6 +7,9 @@
 #define PCL_MSGS_MESSAGE_POINTINDICES_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -40,7 +43,11 @@ struct PointIndices_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
+#if _HAS_CXX20
+   typedef std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t> >  _indices_type;
+#else
    typedef std::vector<int32_t, typename ContainerAllocator::template rebind<int32_t>::other >  _indices_type;
+#endif
   _indices_type indices;
 
 

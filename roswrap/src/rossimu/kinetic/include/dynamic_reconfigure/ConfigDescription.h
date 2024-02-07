@@ -7,6 +7,9 @@
 #define DYNAMIC_RECONFIGURE_MESSAGE_CONFIGDESCRIPTION_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -40,7 +43,11 @@ struct ConfigDescription_
 
 
 
+#if _HAS_CXX20
+   typedef std::vector< ::dynamic_reconfigure::Group_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::dynamic_reconfigure::Group_<ContainerAllocator> > >  _groups_type;
+#else
    typedef std::vector< ::dynamic_reconfigure::Group_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::dynamic_reconfigure::Group_<ContainerAllocator> >::other >  _groups_type;
+#endif
   _groups_type groups;
 
    typedef  ::dynamic_reconfigure::Config_<ContainerAllocator>  _max_type;

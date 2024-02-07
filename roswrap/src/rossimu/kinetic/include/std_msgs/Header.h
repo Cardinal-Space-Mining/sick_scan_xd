@@ -7,6 +7,9 @@
 #define STD_MSGS_MESSAGE_HEADER_H
 
 
+#if _HAS_CXX20
+#include <memory>
+#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -44,7 +47,11 @@ struct Header_
    typedef ros::Time _stamp_type;
   _stamp_type stamp;
 
+#if _HAS_CXX20
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _frame_id_type;
+#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _frame_id_type;
+#endif
   _frame_id_type frame_id;
 
 
@@ -207,7 +214,11 @@ struct Printer< ::std_msgs::Header_<ContainerAllocator> >
     s << indent << "stamp: ";
     Printer<ros::Time>::stream(s, indent + "  ", v.stamp);
     s << indent << "frame_id: ";
+#if _HAS_CXX20
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.frame_id);
+#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.frame_id);
+#endif
   }
 };
 
