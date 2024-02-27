@@ -166,6 +166,7 @@ void sick_scansegment_xd::UdpReceiver::Close(void)
     }
     if (m_receiver_thread)
     {
+        if (m_socket_impl) m_socket_impl->ForceStop();  // allow the thread to exit in case the socket is still blocking
         m_receiver_thread->join();
         delete m_receiver_thread;
         m_receiver_thread = 0;
