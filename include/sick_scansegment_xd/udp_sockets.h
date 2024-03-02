@@ -179,7 +179,13 @@ namespace sick_scansegment_xd
         /** Force stop a any blocking Receive()'s by enabling the exit condition and shutting down the recv socket */
         void ForceStop() {
             m_force_quit = true;
-            shutdown(m_udp_socket, SHUT_RDWR);
+// #if defined WIN32 || defined _MSC_VER
+//             shutdown(m_udp_socket, SD_BOTH);
+// #else
+//             shutdown(m_udp_socket, SHUT_RDWR);
+// #endif
+            closesocket(m_udp_socket);
+            m_udp_socket = INVALID_SOCKET;
         }
 
         /** Reads blocking until some data has been received successfully or an error occurs. Returns the number of bytes received. */
