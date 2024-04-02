@@ -929,7 +929,7 @@ bool sick_scansegment_xd::CompactDataParser::Parse(const ScanSegmentParserConfig
     if (use_software_pll)
     {
         SoftwarePLL& software_pll = SoftwarePLL::instance();
-        int64_t systemtime_nanoseconds = system_timestamp.time_since_epoch().count();
+        int64_t systemtime_nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(system_timestamp.time_since_epoch()).count();
         uint32_t systemtime_sec = (uint32_t)(systemtime_nanoseconds / 1000000000);  // seconds part of system timestamp
         uint32_t systemtime_nsec = (uint32_t)(systemtime_nanoseconds % 1000000000); // nanoseconds part of system timestamp
         uint32_t curtick = (uint32_t)(sensor_timeStamp & 0xFFFFFFFF);
