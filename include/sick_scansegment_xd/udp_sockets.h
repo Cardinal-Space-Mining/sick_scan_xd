@@ -108,7 +108,7 @@ namespace sick_scansegment_xd
     public:
 
         /** Default constructor */
-        UdpReceiverSocketImpl() : m_udp_sender(""), m_udp_port(0), m_udp_socket(INVALID_SOCKET) 
+        UdpReceiverSocketImpl() : m_udp_sender(""), m_udp_port(0), m_udp_socket(INVALID_SOCKET), m_force_quit(false)
         {
         }
 
@@ -176,11 +176,22 @@ namespace sick_scansegment_xd
             }
         }
 
+        /** Force stop a any blocking Receive()'s by enabling the exit condition and shutting down the recv socket */
+        void ForceStop() {
+            m_force_quit = true;
+#if defined WIN32 || defined _MSC_VER
+            closesocket(m_udp_socket);
+            m_udp_socket = INVALID_SOCKET;
+#else
+            shutdown(m_udp_socket, SHUT_RDWR);
+#endif
+        }
+
         /** Reads blocking until some data has been received successfully or an error occurs. Returns the number of bytes received. */
         size_t Receive(std::vector<uint8_t>& msg_payload)
         {
             int64_t bytes_received = 0;
-            while(bytes_received == 0)
+            while(!m_force_quit && bytes_received == 0)
                 bytes_received = recv(m_udp_socket, (char*)msg_payload.data(), (int)msg_payload.size(), 0);
             if (bytes_received < 0)
                 return 0; // socket error
@@ -195,7 +206,7 @@ namespace sick_scansegment_xd
             size_t bytes_received = 0;
             size_t bytes_to_receive = msg_payload.size();
             // Receive \x02\x02\x02\x02 | 4Bytes payloadlength incl. CRC | Payload | CRC32
-            while (bytes_received < bytes_to_receive && (timeout < 0 || sick_scansegment_xd::Seconds(start_timestamp, chrono_system_clock::now()) < timeout))
+            while (!m_force_quit && bytes_received < bytes_to_receive && (timeout < 0 || sick_scansegment_xd::Seconds(start_timestamp, chrono_system_clock::now()) < timeout))
             {
                 int64_t chunk_bytes_received = recv(m_udp_socket, (char*)msg_payload.data() + bytes_received, (int)msg_payload.size() - bytes_received, 0);
                 if (chunk_bytes_received <= 0)
@@ -237,6 +248,7 @@ namespace sick_scansegment_xd
         std::string m_udp_sender; // IP of udp sender
         int m_udp_port;           // udp port
         SOCKET m_udp_socket;      // udp raw socket
+        bool m_force_quit;        // allows Receive() to unblock in case external code needs to stop running threads
     };
 
     /*!
