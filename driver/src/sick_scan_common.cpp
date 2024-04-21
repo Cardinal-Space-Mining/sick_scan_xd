@@ -183,6 +183,30 @@ const std::string binScanfGetStringFromVec(std::vector<unsigned char> *replyDumm
   return (s);
 }
 
+static std::vector<int> parseFirmwareVersion(const std::string& scannertype, const std::string& deviceIdentStr) // Parse and return firmware version from device ident string
+{
+  size_t device_idx = deviceIdentStr.find(scannertype); // Get MRS1xxx version from device ident string
+  size_t version_idx = ((device_idx != std::string::npos) ? deviceIdentStr.find("V", device_idx) : std::string::npos);
+  std::vector<int> version_id;
+  if (version_idx != std::string::npos && version_idx + 1 < deviceIdentStr.size())
+  {
+    std::stringstream device_id_stream(deviceIdentStr.substr(version_idx + 1));
+    std::string token;
+    while (std::getline(device_id_stream, token, '.') && version_id.size() < 3)
+      version_id.push_back(std::atoi(token.c_str()));
+  }
+  while (version_id.size() < 3)
+    version_id.push_back('0');
+  ROS_INFO_STREAM(scannertype << " firmware version " << version_id[0] << "." << version_id[1] << "." << version_id[2]);
+  return version_id;
+}
+
+static bool& isFieldEvaluationActive()
+{
+  static bool field_evaluation_active = false;
+  return field_evaluation_active;
+}
+
 namespace sick_scan_xd
 {
   /*!
@@ -503,9 +527,12 @@ namespace sick_scan_xd
     {
         datagram_pub_ = rosAdvertise<ros_std_msgs::String>(nh, nodename + "/datagram", 1000);
     }
-    std::string cloud_topic_val = "cloud";
     rosDeclareParam(nh, "cloud_topic", cloud_topic_val);
     rosGetParam(nh, "cloud_topic", cloud_topic_val);
+
+    std::string laserscan_topic = nodename + "/scan";
+    rosDeclareParam(nh, "laserscan_topic", laserscan_topic);
+    rosGetParam(nh, "laserscan_topic", laserscan_topic);
 
     rosDeclareParam(nh, "frame_id", config_.frame_id);
     rosGetParam(nh, "frame_id", config_.frame_id);
@@ -609,16 +636,19 @@ namespace sick_scan_xd
     }
 
     // Pointcloud2 publisher
-    //
-    ROS_INFO_STREAM("Publishing lidar pointcloud2 to " << cloud_topic_val);
-    cloud_pub_ = rosAdvertise<ros_sensor_msgs::PointCloud2>(nh, cloud_topic_val, 100);
+    if (parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_SCANSEGMENT_XD_NAME) != 0
+     && parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_PICOSCAN_NAME) != 0)
+    {
+      ROS_INFO_STREAM("Publishing lidar pointcloud2 to " << cloud_topic_val);
+      cloud_pub_ = rosAdvertise<ros_sensor_msgs::PointCloud2>(nh, cloud_topic_val, 100);
 
-    imuScan_pub_ = rosAdvertise<ros_sensor_msgs::Imu>(nh, nodename + "/imu", 100);
+      imuScan_pub_ = rosAdvertise<ros_sensor_msgs::Imu>(nh, nodename + "/imu", 100);
 
+      Encoder_pub = rosAdvertise<sick_scan_msg::Encoder>(nh, nodename + "/encoder", 100);
+    }
 
-    Encoder_pub = rosAdvertise<sick_scan_msg::Encoder>(nh, nodename + "/encoder", 100);
     // scan publisher
-    pub_ = rosAdvertise<ros_sensor_msgs::LaserScan>(nh, nodename + "/scan", 1000);
+    pub_ = rosAdvertise<ros_sensor_msgs::LaserScan>(nh, laserscan_topic, 1000);
 
 #if defined USE_DIAGNOSTIC_UPDATER
     if(diagnostics_)
@@ -776,8 +806,8 @@ namespace sick_scan_xd
 
   }
 
-  /// Converts a given SOPAS command from ascii to binary (in case of binary communication), sends sopas (ascii or binary) and returns the response (if wait_for_reply:=true)
   /**
+   * \brief Converts a given SOPAS command from ascii to binary (in case of binary communication), sends sopas (ascii or binary) and returns the response (if wait_for_reply:=true)
    * \param [in] request the command to send.
    * \param [in] cmdLen Length of the Comandstring in bytes used for Binary Mode only
    */
@@ -874,7 +904,7 @@ namespace sick_scan_xd
   {
     delete cloud_marker_;
     delete diagnosticPub_;
-    printf("sick_scan_xd driver closed.\n");
+    printf("SickScanCommon closed.\n");
   }
 
 
@@ -1184,6 +1214,22 @@ namespace sick_scan_xd
     return ExitSuccess;
   }
 
+  bool SickScanCommon::switchColaProtocol(bool useBinaryCmd)
+  {
+    std::vector<unsigned char> sopas_response;
+    std::vector<std::string> sopas_change_cola_commands = { cmdSetAccessMode3(), sopasCmdVec[(useBinaryCmd ? CMD_SET_TO_COLA_B_PROTOCOL : CMD_SET_TO_COLA_A_PROTOCOL)] };
+    for(int n = 0; n < sopas_change_cola_commands.size(); n++)
+    {
+      if (sendSopasAorBgetAnswer(sopas_change_cola_commands[n], &sopas_response, !useBinaryCmd) != 0) // no answer
+      {
+        ROS_WARN_STREAM("checkColaDialect: no lidar response to sopas requests \"" << sopas_change_cola_commands[n] << "\", aborting");
+        return false;
+      }
+    }
+    ROS_INFO_STREAM("checkColaDialect: switched to Cola-" << (useBinaryCmd ? "B" : "A"));
+    return true;
+  }
+
   // Check Cola-Configuration of the scanner:
   // * Send "sRN DeviceState" with configured cola-dialect (Cola-B = useBinaryCmd)
   // * If lidar does not answer:
@@ -1192,6 +1238,13 @@ namespace sick_scan_xd
   //     * Switch to configured cola-dialect (Cola-B = useBinaryCmd) using "sWN EIHstCola" and restart
   ExitCode SickScanCommon::checkColaTypeAndSwitchToConfigured(bool useBinaryCmd)
   {
+    static bool tim240_binary_mode = useBinaryCmd;
+    bool useBinaryCmdCfg = useBinaryCmd;
+    if (this->parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_TIM_240_NAME) == 0)
+    {
+      useBinaryCmd = tim240_binary_mode; // TiM240 does not respond to any request if once sent a sopas command in wrong cola dialect. Toggle Cola dialect directly after restart required for TiM240.
+      ROS_INFO_STREAM("checkColaDialect using Cola-" << (useBinaryCmd ? "B" : "A") << " (TiM-240)");
+    }
     if (sendSopasAorBgetAnswer(sopasCmdVec[CMD_DEVICE_STATE], 0, useBinaryCmd) != 0) // no answer
     {
       ROS_WARN_STREAM("checkColaDialect: lidar response not in configured Cola-dialect Cola-" << (useBinaryCmd ? "B" : "A") << ", trying different Cola configuration");
@@ -1200,30 +1253,33 @@ namespace sick_scan_xd
       {
         ROS_WARN_STREAM("checkColaDialect: no lidar response in any cola configuration, check lidar and network!");
         ROS_WARN_STREAM("SickScanCommon::init_scanner() failed, aborting.");
-        return ExitError;
       }
       else
       {
         ROS_WARN_STREAM("checkColaDialect: lidar response in configured Cola-dialect Cola-" << (!useBinaryCmd ? "B" : "A") << ", changing Cola configuration and restart!");
-        std::vector<std::string> sopas_change_cola_commands = {
-          cmdSetAccessMode3(), // sopasCmdVec[CMD_SET_ACCESS_MODE_3],
-          sopasCmdVec[(useBinaryCmd ? CMD_SET_TO_COLA_B_PROTOCOL : CMD_SET_TO_COLA_A_PROTOCOL)]
-        };
-        for(int n = 0; n < sopas_change_cola_commands.size(); n++)
-        {
-          if (sendSopasAorBgetAnswer(sopas_change_cola_commands[n], &sopas_response, !useBinaryCmd) != 0) // no answer
-          {
-            ROS_WARN_STREAM("checkColaDialect: no lidar response to sopas requests \"" << sopas_change_cola_commands[n] << "\", aborting");
-            return ExitError;
-          }
-        }
+        switchColaProtocol(useBinaryCmd);
         ROS_INFO_STREAM("checkColaDialect: restarting after Cola configuration change.");
-        return ExitError;
       }
+      if (this->parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_TIM_240_NAME) == 0)
+      {
+        tim240_binary_mode = !tim240_binary_mode; // TiM240 does not respond to any request if once sent a sopas command in wrong cola dialect. Toggle Cola dialect directly after restart required for TiM240.
+        ROS_INFO_STREAM("checkColaDialect: switching to Cola-" << (useBinaryCmd ? "B" : "A") << " after restart (TiM-240)");
+      }
+      return ExitError;
     }
     else
     {
       ROS_INFO_STREAM("checkColaDialect: lidar response in configured Cola-dialect Cola-" << (useBinaryCmd ? "B" : "A"));
+      if (this->parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_TIM_240_NAME) == 0)
+      {
+        if (useBinaryCmd != useBinaryCmdCfg)
+        {
+          ROS_INFO_STREAM("checkColaDialect sucessful using Cola-" << (useBinaryCmd ? "B" : "A") << ", switch to Cola-" << (useBinaryCmdCfg ? "B" : "A") << " (TiM-240)");
+          switchColaProtocol(useBinaryCmdCfg);
+          tim240_binary_mode = useBinaryCmdCfg;
+          return ExitError; // Restart after protocol switch required for TiM240
+        }
+      }
     }
     return ExitSuccess;
   }
@@ -1496,6 +1552,7 @@ namespace sick_scan_xd
     sopasCmdVec[CMD_APPLICATION_MODE_FIELD_ON] = "\x02sWN SetActiveApplications 1 FEVL 1\x03"; // <STX>sWN{SPC}SetActiveApplications{SPC}1{SPC}FEVL{SPC}1<ETX>
     sopasCmdVec[CMD_APPLICATION_MODE_FIELD_OFF] = "\x02sWN SetActiveApplications 1 FEVL 0\x03"; // <STX>sWN{SPC}SetActiveApplications{SPC}1{SPC}FEVL{SPC}0<ETX>
     sopasCmdVec[CMD_APPLICATION_MODE_RANGING_ON] = "\x02sWN SetActiveApplications 1 RANG 1\x03";
+    sopasCmdVec[CMD_READ_ACTIVE_APPLICATIONS] = "\x02sRN SetActiveApplications\x03";
     sopasCmdVec[CMD_SET_TO_COLA_A_PROTOCOL] = "\x02sWN EIHstCola 0\x03";
     sopasCmdVec[CMD_GET_PARTIAL_SCANDATA_CFG] = "\x02sRN LMDscandatacfg\x03";//<STX>sMN{SPC}mLMPsetscancfg{SPC } +5000{SPC}+1{SPC}+5000{SPC}-450000{SPC}+2250000<ETX>
     sopasCmdVec[CMD_GET_PARTIAL_SCAN_CFG] = "\x02sRN LMPscancfg\x03";
@@ -1645,6 +1702,7 @@ namespace sick_scan_xd
     // sopasCmdErrMsg[CMD_ALIGNMENT_MODE] = "Error setting Alignmentmode";
     sopasCmdErrMsg[CMD_SCAN_LAYER_FILTER] = "Error setting ScanLayerFilter";
     sopasCmdErrMsg[CMD_APPLICATION_MODE] = "Error setting Meanfilter";
+    sopasCmdErrMsg[CMD_READ_ACTIVE_APPLICATIONS] = "Error reading active applications by \"sRA SetActiveApplications\"";
     sopasCmdErrMsg[CMD_SET_ACCESS_MODE_3] = "Error Access Mode Client";
     sopasCmdErrMsg[CMD_SET_ACCESS_MODE_3_SAFETY_SCANNER] = "Error Access Mode Client";
     sopasCmdErrMsg[CMD_SET_OUTPUT_RANGES] = "Error setting angular ranges";
@@ -1776,6 +1834,10 @@ namespace sick_scan_xd
     if (tryToStopMeasurement)
     {
       sopasCmdChain.push_back(CMD_STOP_MEASUREMENT);
+      if (parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_MRS_1XXX_NAME) == 0)
+      {
+          sopasCmdChain.push_back(CMD_READ_ACTIVE_APPLICATIONS); // "sRN SetActiveApplications"
+      }
       int numberOfLayers = parser_->getCurrentParamPtr()->getNumberOfLayers();
 
       switch (numberOfLayers)
@@ -2118,6 +2180,22 @@ namespace sick_scan_xd
       return ExitError;
     }
 
+    int initialize_scanner = 1;
+    if (this->parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_TIM_7XXS_NAME) == 0)
+    {
+      rosDeclareParam(nh, "initialize_scanner", initialize_scanner);
+      rosGetParam(nh, "initialize_scanner", initialize_scanner);
+      if (initialize_scanner == 0)
+      {
+        ROS_WARN_STREAM("SickScanCommon::init_scanner(): initialize_scanner=" << initialize_scanner << " for TiM7xxS configured.\n");
+        ROS_WARN_STREAM("Note that this mode does not initialize the lidar. The mode assumes that the scanner is in an appropriate state matching the properties otherwise set in the launchfile.");
+        ROS_WARN_STREAM("DO NOT USE THIS MODE EXCEPT THE LIDAR HAS BEEN CONFIGURED AND INITIALIZED SUCCESSFULLY");
+        ROS_WARN_STREAM("AND IS IN THE SAME STATE AS AFTER INITIALIZATION BY THE LAUNCHFILE!\n");
+        ROS_WARN_STREAM("SickScanCommon::init_scanner(): skipping lidar initialization.\n");
+        sopasCmdChain.clear();
+      }
+    }
+
     for (size_t i = 0; i < this->sopasCmdChain.size(); i++)
     {
       rosSleep(0.2);     // could maybe removed
@@ -2160,13 +2238,32 @@ namespace sick_scan_xd
         if (useBinaryCmdNow)
         {
           this->convertAscii2BinaryCmd(sopasCmd.c_str(), &reqBinary);
-          result = sendSopasAndCheckAnswer(reqBinary, &replyDummy);
+          if (reqBinary.size() > 0)
+          {
+            result = sendSopasAndCheckAnswer(reqBinary, &replyDummy);
+          }
+          else
+          {
+            result = 0;
+          }
           sopasReplyBinVec[cmdId] = replyDummy;
         }
         else
         {
           result = sendSopasAndCheckAnswer(sopasCmd.c_str(), &replyDummy);
         }
+
+        if (parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_MRS_1XXX_NAME) == 0 && sopasCmd == sopasCmdVec[CMD_READ_ACTIVE_APPLICATIONS]) // "sRN SetActiveApplications"
+        {
+          std::string sopas_reply = DataDumper::binDataToAsciiString(replyDummy.data(), replyDummy.size());
+          ROS_INFO_STREAM("response to \"sRN SetActiveApplications\": " << sopas_reply);
+          if (sopas_reply.find("FEVL\\x01") != std::string::npos)
+            isFieldEvaluationActive() = true;
+          if (sopas_reply.find("FEVL\\x00") != std::string::npos)
+            isFieldEvaluationActive() = false;
+          ROS_INFO_STREAM("FieldEvaluationActive = " << (isFieldEvaluationActive() ? "true": "false"));
+        }
+
         if (result == 0) // command sent successfully
         {
           // useBinaryCmd holds information about last successful command mode
@@ -2611,10 +2708,6 @@ namespace sick_scan_xd
     }
 
 
-
-
-
-
     if (setUseNTP)
     {
 
@@ -2624,7 +2717,21 @@ namespace sick_scan_xd
     /*
      * The NAV310 and of course the radar does not support angular resolution handling
      */
-    if (this->parser_->getCurrentParamPtr()->getDeviceIsRadar() )
+
+    if (initialize_scanner == 0) // skip initialization sequence (optional for TiM781S only)
+    {
+      ROS_INFO_STREAM("MIN_ANG from launchfile (initialize_scanner==0): " << config_.min_ang << " [rad] " << rad2deg(this->config_.min_ang) << " [deg]");
+      ROS_INFO_STREAM("MAX_ANG from launchfile (initialize_scanner==0): " << config_.max_ang << " [rad] " << rad2deg(this->config_.max_ang) << " [deg]");
+      outputChannelFlagId = 0xFF; // enable output of all scan data on all channels
+      // SAFTY FIELD PARSING
+      result = readParseSafetyFields(useBinaryCmd);
+      if (result != ExitSuccess)
+      {
+        ROS_ERROR_STREAM("## ERROR SickScanCommon::readParseSafetyFields() failed");
+        return result;
+      }
+    }
+    else if (this->parser_->getCurrentParamPtr()->getDeviceIsRadar() )
     {
       //=====================================================
       // Radar specific commands
@@ -3155,84 +3262,13 @@ namespace sick_scan_xd
         rssiResolutionIs16Bit = this->parser_->getCurrentParamPtr()->getIntensityResolutionIs16Bit();
 
       }
-      //SAFTY FIELD PARSING
-      if (this->parser_->getCurrentParamPtr()->getUseEvalFields() == USE_EVAL_FIELD_TIM7XX_LOGIC || this->parser_->getCurrentParamPtr()->getUseEvalFields() == USE_EVAL_FIELD_LMS5XX_LOGIC)
-      {
-        ROS_INFO("Reading safety fields");
-        float rectFieldAngleRefPointOffsetRad = this->parser_->getCurrentParamPtr()->getRectEvalFieldAngleRefPointOffsetRad();
-        SickScanFieldMonSingleton *fieldMon = SickScanFieldMonSingleton::getInstance();
-        int maxFieldnum = this->parser_->getCurrentParamPtr()->getMaxEvalFields();
-        for(int fieldnum=0;fieldnum<maxFieldnum;fieldnum++)
-        {
-          char requestFieldcfg[MAX_STR_LEN];
-          const char *pcCmdMask = sopasCmdMaskVec[CMD_GET_SAFTY_FIELD_CFG].c_str();
-          sprintf(requestFieldcfg, pcCmdMask, fieldnum);
-          if (useBinaryCmd) {
-            std::vector<unsigned char> reqBinary;
-            std::vector<unsigned char> fieldcfgReply;
-            this->convertAscii2BinaryCmd(requestFieldcfg, &reqBinary);
-            result = sendSopasAndCheckAnswer(reqBinary, &fieldcfgReply);
-            RETURN_ERROR_ON_RESPONSE_TIMEOUT(result, fieldcfgReply); // No response, non-recoverable connection error (return error and do not try other commands)
-            fieldMon->parseBinaryDatagram(fieldcfgReply, rectFieldAngleRefPointOffsetRad);
-          } else {
-            std::vector<unsigned char> fieldcfgReply;
-            result = sendSopasAndCheckAnswer(requestFieldcfg, &fieldcfgReply);
-            RETURN_ERROR_ON_RESPONSE_TIMEOUT(result, fieldcfgReply); // No response, non-recoverable connection error (return error and do not try other commands)
-            fieldMon->parseAsciiDatagram(fieldcfgReply, rectFieldAngleRefPointOffsetRad);
-          }
-        }
-        if(cloud_marker_)
-        {
-          int fieldset = 0;
-          // pn.getParam("fieldset", fieldset);
-          std::string LIDinputstateRequest = "\x02sRN LIDinputstate\x03";
-          std::vector<unsigned char> LIDinputstateResponse;
-          if (useBinaryCmd)
-          {
-            std::vector<unsigned char> reqBinary;
-            this->convertAscii2BinaryCmd(LIDinputstateRequest.c_str(), &reqBinary);
-            result = sendSopasAndCheckAnswer(reqBinary, &LIDinputstateResponse);
-            RETURN_ERROR_ON_RESPONSE_TIMEOUT(result, LIDinputstateResponse); // No response, non-recoverable connection error (return error and do not try other commands)
-            if(result == 0)
-            {
-              //fieldset = (LIDinputstateResponse[32] & 0xFF);
-              //fieldMon->setActiveFieldset(fieldset);
-              fieldMon->parseBinaryLIDinputstateMsg(LIDinputstateResponse.data(), LIDinputstateResponse.size());
-              ROS_INFO_STREAM("Safety fieldset response to \"sRN LIDinputstate\": " << DataDumper::binDataToAsciiString(LIDinputstateResponse.data(), LIDinputstateResponse.size())
-                << ", active fieldset = " << fieldMon->getActiveFieldset());
-            }
-          }
-          else
-          {
-            result = sendSopasAndCheckAnswer(LIDinputstateRequest.c_str(), &LIDinputstateResponse);
-            RETURN_ERROR_ON_RESPONSE_TIMEOUT(result, LIDinputstateResponse); // No response, non-recoverable connection error (return error and do not try other commands)
-          }
 
-          std::string scanner_name = parser_->getCurrentParamPtr()->getScannerName();
-          EVAL_FIELD_SUPPORT eval_field_logic = this->parser_->getCurrentParamPtr()->getUseEvalFields();
-          cloud_marker_->updateMarker(fieldMon->getMonFields(), fieldset, eval_field_logic);
-          std::stringstream field_info;
-          field_info << "Safety fieldset " << fieldset << ", pointcounter = [ ";
-          for(int n = 0; n < fieldMon->getMonFields().size(); n++)
-            field_info << (n > 0 ? ", " : " ") << fieldMon->getMonFields()[n].getPointCount();
-          field_info << " ]";
-          ROS_INFO_STREAM(field_info.str());
-          for(int n = 0; n < fieldMon->getMonFields().size(); n++)
-          {
-            if(fieldMon->getMonFields()[n].getPointCount() > 0)
-            {
-              std::stringstream field_info2;
-              field_info2 << "Safety field " << n << ", type " << (int)(fieldMon->getMonFields()[n].fieldType()) << " : ";
-              for(int m = 0; m < fieldMon->getMonFields()[n].getPointCount(); m++)
-              {
-                if(m > 0)
-                  field_info2 << ", ";
-                field_info2 << "(" << fieldMon->getMonFields()[n].getFieldPointsX()[m] << "," << fieldMon->getMonFields()[n].getFieldPointsY()[m] << ")";
-              }
-              ROS_INFO_STREAM(field_info2.str());
-            }
-          }
-        }
+      // SAFTY FIELD PARSING
+      result = readParseSafetyFields(useBinaryCmd);
+      if (result != ExitSuccess)
+      {
+        ROS_ERROR_STREAM("## ERROR SickScanCommon::readParseSafetyFields() failed");
+        return result;
       }
 
       // set scanning angle for tim5xx and for mrs1104
@@ -3255,13 +3291,23 @@ namespace sick_scan_xd
             else
               scandatacfg_timingflag = 1; // default: Timing flag LMDscandatacfg on
           }
+          int rssi_flag = rssiFlag ? 1 : 0;
+          if (this->parser_->getCurrentParamPtr()->getScandatacfgAzimuthTableSupported())
+          {
+            int scandatacfg_azimuth_table = 0;
+            rosDeclareParam(nh, "scandatacfg_azimuth_table", scandatacfg_azimuth_table);
+            rosGetParam(nh, "scandatacfg_azimuth_table", scandatacfg_azimuth_table);
+            if (scandatacfg_azimuth_table != 0)
+              rssi_flag |= 0x2; // set (enable) "transmit angle flag" for MRS-1xxx
+            ROS_INFO_STREAM("MRS1xxx scandatacfg_azimuth_table=" << scandatacfg_azimuth_table << ", rssi_flag=" << rssi_flag << ", azimuth table " << ((rssi_flag & 0x02) != 0 ? "": "not ") << "activated");
+          }
 
           //normal scanconfig handling
           char requestLMDscandatacfg[MAX_STR_LEN];
           // Uses sprintf-Mask to set bitencoded echos and rssi enable flag
           // sopasCmdMaskVec[CMD_SET_PARTIAL_SCANDATA_CFG] = "\x02sWN LMDscandatacfg %02d 00 %d %d 00 %d 00 0 0 0 1 %d\x03"; // outputChannelFlagId, rssiFlag, rssiResolutionIs16Bit, EncoderSettings, timingflag
           const char *pcCmdMask = sopasCmdMaskVec[CMD_SET_PARTIAL_SCANDATA_CFG].c_str();
-            sprintf(requestLMDscandatacfg, pcCmdMask, outputChannelFlagId, rssiFlag ? 1 : 0,
+            sprintf(requestLMDscandatacfg, pcCmdMask, outputChannelFlagId, rssi_flag,
                   rssiResolutionIs16Bit ? 1 : 0,
                   EncoderSettings != -1 ? EncoderSettings : 0,
                   scandatacfg_timingflag);
@@ -3561,7 +3607,11 @@ namespace sick_scan_xd
     //
     //-----------------------------------------------------------------
     std::vector<int> startProtocolSequence;
-    if (this->parser_->getCurrentParamPtr()->getDeviceIsRadar())
+    if (initialize_scanner == 0) // skip initialization sequence (optional for TiM781S only)
+    {
+      startProtocolSequence.push_back(CMD_START_SCANDATA); // otherwise the lidar does not send LMDscandata
+    }
+    else if (this->parser_->getCurrentParamPtr()->getDeviceIsRadar())
     {
       bool transmitRawTargets = true;
       bool transmitObjects = true;
@@ -3979,6 +4029,8 @@ namespace sick_scan_xd
           std::vector<uint8_t> addLandmarkRequest = { 0x02, 0x02, 0x02, 0x02, 0, 0, 0, 0 };
           addLandmarkRequest.insert(addLandmarkRequest.end(), addLandmarkRequestPayload.begin(), addLandmarkRequestPayload.end());
           setLengthAndCRCinBinarySopasRequest(&addLandmarkRequest);
+          ROS_DEBUG_STREAM("Sending landmarks, " << addLandmarkRequest.size() << " byte sopas request (" << addLandmarkRequestPayload.size()
+            << " byte payload): \"" << DataDumper::binDataToAsciiString(addLandmarkRequest.data(), addLandmarkRequest.size()) << "\"");
           if (sendSopasAndCheckAnswer(addLandmarkRequest, &sopas_response) != 0)
             return ExitError;
           // Store mapping layout: "sMN mNLAYStoreLayout"
@@ -4463,7 +4515,7 @@ namespace sick_scan_xd
         char *dstart, *dend;
         bool dumpDbg = false;
         bool dataToProcess = true;
-        std::vector<float> vang_vec;
+        std::vector<float> vang_vec, azimuth_vec;        
         vang_vec.clear();
 		dstart = NULL;
 		dend = NULL;
@@ -4542,7 +4594,7 @@ namespace sick_scan_xd
                 else
                 {
                   success = parseCommonBinaryResultTelegram(receiveBuffer, actual_length, elevAngleX200, elevAngleTelegramValToDeg, elevationAngleInRad, recvTimeStamp,
-                    config_.sw_pll_only_publish, config_.use_generation_timestamp, parser_, FireEncoder, EncoderMsg, numEchos, vang_vec, msg);
+                    config_.sw_pll_only_publish, config_.use_generation_timestamp, parser_, FireEncoder, EncoderMsg, numEchos, vang_vec, azimuth_vec, msg);
                   if (!success)
                     ROS_ERROR_STREAM("## ERROR SickScanCommon::loopOnce(): parseCommonBinaryResultTelegram() failed");
                 }
@@ -4645,7 +4697,6 @@ namespace sick_scan_xd
             // Copy to pointcloud
             int layer = 0;
             int baseLayer = 0;
-            bool useGivenElevationAngle = false;
 
             switch (numOfLayers)
             {
@@ -4677,10 +4728,6 @@ namespace sick_scan_xd
 #endif
 
                 elevationPreCalculated = true;
-                if (vang_vec.size() > 0)
-                {
-                  useGivenElevationAngle = true;
-                }
                 break;
               default:
                 assert(0);
@@ -4937,10 +4984,15 @@ namespace sick_scan_xd
                 float *sinAlphaTablePtr = &sinAlphaTable[0];
 
                 float *vangPtr = NULL;
+                float *azimuthPtr = NULL;
                 float *rangeTmpPtr = &rangeTmp[0];
                 if (vang_vec.size() > 0)
                 {
                   vangPtr = &vang_vec[0];
+                }
+                if (azimuth_vec.size() > 0)
+                {
+                  azimuthPtr = &azimuth_vec[0];
                 }
 
                 size_t rangeNumPointcloudCurEcho = 0;
@@ -4966,7 +5018,7 @@ namespace sick_scan_xd
                   float phi = angle; // azimuth angle
                   float alpha = 0.0;  // elevation angle
 
-                  if (useGivenElevationAngle) // FOR MRS6124
+                  if (vangPtr) // use elevation table for MRS6124
                   {
                     alpha = -vangPtr[rangeIdxScan] * deg2rad_const;
                   }
@@ -5008,6 +5060,12 @@ namespace sick_scan_xd
                     {
                       phi_used = angleCompensator->compensateAngleInRadFromRos(phi_used);
                     }
+                    if (azimuthPtr)
+                    {
+                      // ROS_DEBUG_STREAM("azimuth[" << rangeIdxScan << "] = " << std::fixed << std::setprecision(3) << (azimuthPtr[rangeIdxScan] * 180 / M_PI) << ", angle diff = " << ((azimuthPtr[rangeIdxScan] - phi_used) * 180 / M_PI));
+                      phi_used = azimuthPtr[rangeIdxScan]; // use azimuth table for MRS1xxx
+                    }
+
                     // Cartesian pointcloud
                     float phi2_used = phi_used + m_add_transform_xyz_rpy.azimuthOffset();
                     fptr[idx_x] = rangeCos * (float)cos(phi2_used) * mirror_factor;  // copy x value in pointcloud
@@ -5084,8 +5142,8 @@ namespace sick_scan_xd
                   range_filter.resizePointCloud(rangeNumPointcloudAllEchos, cloud_polar_);
                 }
 
-                sick_scan_xd::PointCloud2withEcho cloud_msg(&cloud_, numValidEchos, 0);
-                sick_scan_xd::PointCloud2withEcho cloud_msg_polar(&cloud_polar_, numValidEchos, 0);
+                sick_scan_xd::PointCloud2withEcho cloud_msg(&cloud_, numValidEchos, 0, cloud_topic_val);
+                sick_scan_xd::PointCloud2withEcho cloud_msg_polar(&cloud_polar_, numValidEchos, 0, cloud_topic_val);
 #ifdef ROSSIMU
                 notifyPolarPointcloudListener(nh, &cloud_msg_polar);
                 notifyCartesianPointcloudListener(nh, &cloud_msg);
@@ -5185,7 +5243,7 @@ namespace sick_scan_xd
                     assert(partialCloud.data.size() == partialCloud.width * partialCloud.point_step);
 
 
-                    sick_scan_xd::PointCloud2withEcho partial_cloud_msg(&partialCloud, numValidEchos, 0);
+                    sick_scan_xd::PointCloud2withEcho partial_cloud_msg(&partialCloud, numValidEchos, 0, cloud_topic_val);
                     notifyCartesianPointcloudListener(nh, &partial_cloud_msg);
                     rosPublish(cloud_pub_, partialCloud);
                     //memcpy(&(partialCloud.data[0]), &(cloud_.data[0]) + i * cloud_.point_step, cloud_.point_step * numPartialShots);
@@ -5326,7 +5384,7 @@ namespace sick_scan_xd
     std::string keyWord1 = "sWN FREchoFilter";
     std::string keyWord2 = "sEN LMDscandata";
     std::string keyWord3 = "sWN LMDscandatacfg";
-    std::string keyWord4 = "sWN SetActiveApplications";
+    std::string keyWord4 = "sWN SetActiveApplications"; // "sWN SetActiveApplications 2 FEVL <0|1> RANG 1" for MRS-1xxx with firmware >= 2.x
     std::string keyWord5 = "sEN IMUData";
     std::string keyWord6 = "sWN EIIpAddr";
     std::string keyWord7 = "sMN mLMPsetscancfg";
@@ -5443,7 +5501,7 @@ namespace sick_scan_xd
 
     }
 
-    if (cmdAscii.find(keyWord4) != std::string::npos)
+    if (cmdAscii.find(keyWord4) != std::string::npos) // "sWN SetActiveApplications 1 FEVL 1" or "sWN SetActiveApplications 1 RANG 1"
     {
       char tmpStr[1024] = {0};
       char szApplStr[255] = {0};
@@ -5471,6 +5529,35 @@ namespace sick_scan_xd
         }
       }
       bufferLen = 7;
+      if (parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_MRS_1XXX_NAME) == 0) // activate FEVL and RANG in case of MRS1xxx with firmware version > 1
+      {
+        std::vector<int> version_id = parseFirmwareVersion("MRS1xxx", deviceIdentStr); // Get MRS1xxx version from device ident string
+        if (version_id[0] > 1)
+        {
+          // buffer[6] = 0x01; // MRS1xxx with firmware version > 1 supports RANG+FEVL -> overwrite with "<STX>sWN{SPC}SetActiveApplications{SPC}1{SPC}FEVL{SPC}1<ETX>"
+          // MRS1xxx with firmware version > 1 supports RANG+FEVL -> overwrite with "<STX>sWN{SPC}SetActiveApplications{SPC}2{SPC}FEVL{SPC}1{SPC}RANG{SPC}1<ETX>"
+          // resp. binary "sWN SetActiveApplications \00\02\46\45\56\4C\01\52\41\4e\47\01"
+          uint8_t field_evaluation_status = isFieldEvaluationActive() ? 0x01: 0x00;
+          std::vector<uint8_t> binary_parameter = {0x00, 0x02, 0x46, 0x45, 0x56, 0x4C, field_evaluation_status, 0x52, 0x41, 0x4e, 0x47, 0x01};
+          for (int ii = 0; ii < binary_parameter.size(); ii++)
+            buffer[ii] = binary_parameter[ii];
+          bufferLen = binary_parameter.size();
+        }
+        // Disable scandatacfg_azimuth_table if firmware version is < 2.2
+        if (version_id[0] < 2)
+          parser_->getCurrentParamPtr()->setScandatacfgAzimuthTableSupported(false);
+        if (version_id[0] == 2 && version_id[1] < 2)
+          parser_->getCurrentParamPtr()->setScandatacfgAzimuthTableSupported(false);
+      }
+      if (parser_->getCurrentParamPtr()->getScannerName().compare(SICK_SCANNER_LMS_1XXX_NAME) == 0)
+      {
+        std::vector<int> version_id = parseFirmwareVersion("LMS1xxx", deviceIdentStr); // Get LMS1xxx version from device ident string
+        // Disable scandatacfg_azimuth_table if firmware version is < 2.2
+        if (version_id[0] < 2)
+          parser_->getCurrentParamPtr()->setScandatacfgAzimuthTableSupported(false);
+        if (version_id[0] == 2 && version_id[1] < 2)
+          parser_->getCurrentParamPtr()->setScandatacfgAzimuthTableSupported(false);
+      }
     }
 
     if (cmdAscii.find(keyWord5) != std::string::npos)
@@ -5838,12 +5925,11 @@ namespace sick_scan_xd
   void SickScanCommon::setLengthAndCRCinBinarySopasRequest(std::vector<uint8_t>* requestBinary)
   {
 
-  int msgLen = (int)requestBinary->size();
+  int msgLen = (int)requestBinary->size(); // requestBinary = { 4 byte 0x02020202 } + { 4 byte placeholder for payload length } + { payload }
   msgLen -= 8;
   for (int i = 0; i < 4; i++)
   {
-    unsigned char bigEndianLen = msgLen & (0xFF << (3 - i) * 8);
-    (*requestBinary)[i + 4] = ((unsigned char) (bigEndianLen)); // HIER WEITERMACHEN!!!!
+    (*requestBinary)[4 + i] = (uint8_t)((msgLen >> (3 - i) * 8) & 0xFF); // payload length is always 4 byte big endian encoded
   }
   unsigned char xorVal = 0x00;
   xorVal = sick_crc8((unsigned char *) (&((*requestBinary)[8])), requestBinary->size() - 8);
@@ -6075,7 +6161,92 @@ namespace sick_scan_xd
     ROS_INFO_STREAM(s.str());
   }
 
-  // SopasProtocol m_protocolId;
+  int SickScanCommon::readParseSafetyFields(bool useBinaryCmd)
+  {
+      //SAFTY FIELD PARSING
+      int result = ExitSuccess;
+      const int MAX_STR_LEN = 1024;
+      if (this->parser_->getCurrentParamPtr()->getUseEvalFields() == USE_EVAL_FIELD_TIM7XX_LOGIC || this->parser_->getCurrentParamPtr()->getUseEvalFields() == USE_EVAL_FIELD_LMS5XX_LOGIC)
+      {
+        ROS_INFO("Reading safety fields");
+        float rectFieldAngleRefPointOffsetRad = this->parser_->getCurrentParamPtr()->getRectEvalFieldAngleRefPointOffsetRad();
+        SickScanFieldMonSingleton *fieldMon = SickScanFieldMonSingleton::getInstance();
+        int maxFieldnum = this->parser_->getCurrentParamPtr()->getMaxEvalFields();
+        for(int fieldnum=0;fieldnum<maxFieldnum;fieldnum++)
+        {
+          char requestFieldcfg[MAX_STR_LEN];
+          const char *pcCmdMask = sopasCmdMaskVec[CMD_GET_SAFTY_FIELD_CFG].c_str();
+          sprintf(requestFieldcfg, pcCmdMask, fieldnum);
+          if (useBinaryCmd) {
+            std::vector<unsigned char> reqBinary;
+            std::vector<unsigned char> fieldcfgReply;
+            this->convertAscii2BinaryCmd(requestFieldcfg, &reqBinary);
+            result = sendSopasAndCheckAnswer(reqBinary, &fieldcfgReply);
+            RETURN_ERROR_ON_RESPONSE_TIMEOUT(result, fieldcfgReply); // No response, non-recoverable connection error (return error and do not try other commands)
+            fieldMon->parseBinaryDatagram(fieldcfgReply, rectFieldAngleRefPointOffsetRad);
+          } else {
+            std::vector<unsigned char> fieldcfgReply;
+            result = sendSopasAndCheckAnswer(requestFieldcfg, &fieldcfgReply);
+            RETURN_ERROR_ON_RESPONSE_TIMEOUT(result, fieldcfgReply); // No response, non-recoverable connection error (return error and do not try other commands)
+            fieldMon->parseAsciiDatagram(fieldcfgReply, rectFieldAngleRefPointOffsetRad);
+          }
+        }
+        if(cloud_marker_)
+        {
+          int fieldset = 0;
+          // pn.getParam("fieldset", fieldset);
+          std::string LIDinputstateRequest = "\x02sRN LIDinputstate\x03";
+          std::vector<unsigned char> LIDinputstateResponse;
+          if (useBinaryCmd)
+          {
+            std::vector<unsigned char> reqBinary;
+            this->convertAscii2BinaryCmd(LIDinputstateRequest.c_str(), &reqBinary);
+            result = sendSopasAndCheckAnswer(reqBinary, &LIDinputstateResponse);
+            RETURN_ERROR_ON_RESPONSE_TIMEOUT(result, LIDinputstateResponse); // No response, non-recoverable connection error (return error and do not try other commands)
+            if(result == 0)
+            {
+              //fieldset = (LIDinputstateResponse[32] & 0xFF);
+              //fieldMon->setActiveFieldset(fieldset);
+              fieldMon->parseBinaryLIDinputstateMsg(LIDinputstateResponse.data(), LIDinputstateResponse.size());
+              ROS_INFO_STREAM("Safety fieldset response to \"sRN LIDinputstate\": " << DataDumper::binDataToAsciiString(LIDinputstateResponse.data(), LIDinputstateResponse.size())
+                << ", active fieldset = " << fieldMon->getActiveFieldset());
+            }
+          }
+          else
+          {
+            result = sendSopasAndCheckAnswer(LIDinputstateRequest.c_str(), &LIDinputstateResponse);
+            RETURN_ERROR_ON_RESPONSE_TIMEOUT(result, LIDinputstateResponse); // No response, non-recoverable connection error (return error and do not try other commands)
+          }
+
+          std::string scanner_name = parser_->getCurrentParamPtr()->getScannerName();
+          EVAL_FIELD_SUPPORT eval_field_logic = this->parser_->getCurrentParamPtr()->getUseEvalFields();
+          cloud_marker_->updateMarker(fieldMon->getMonFields(), fieldset, eval_field_logic);
+          std::stringstream field_info;
+          field_info << "Safety fieldset " << fieldset << ", pointcounter = [ ";
+          for(int n = 0; n < fieldMon->getMonFields().size(); n++)
+            field_info << (n > 0 ? ", " : " ") << fieldMon->getMonFields()[n].getPointCount();
+          field_info << " ]";
+          ROS_INFO_STREAM(field_info.str());
+          for(int n = 0; n < fieldMon->getMonFields().size(); n++)
+          {
+            if(fieldMon->getMonFields()[n].getPointCount() > 0)
+            {
+              std::stringstream field_info2;
+              field_info2 << "Safety field " << n << ", type " << (int)(fieldMon->getMonFields()[n].fieldType()) << " : ";
+              for(int m = 0; m < fieldMon->getMonFields()[n].getPointCount(); m++)
+              {
+                if(m > 0)
+                  field_info2 << ", ";
+                field_info2 << "(" << fieldMon->getMonFields()[n].getFieldPointsX()[m] << "," << fieldMon->getMonFields()[n].getFieldPointsY()[m] << ")";
+              }
+              ROS_INFO_STREAM(field_info2.str());
+            }
+          }
+        }
+      }
+      return result;
+  } // SickScanCommon::readParseSafetyFields()
+
 
 } /* namespace sick_scan_xd */
 

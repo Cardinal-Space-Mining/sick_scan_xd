@@ -14,6 +14,8 @@ The generic sick_scan_xd API ships with the API-header, the library (binary or s
 
 ![apiComponentsDiagram1.png](apiComponentsDiagram1.png)
 
+**Note: Running multiple lidars simultaneously in one process is not supported.** Currently the sick_scan_xd API does not support the single or multi-threaded use of 2 or more lidars in one process, since the sick_scan_xd library is not guaranteed to be thread-safe. To run multiple lidars simultaneously, we recommend using ROS or running sick_scan_xd in multiple and separate processes, so that each process serves one sensor.
+
 ## Build and test shared library
 
 The shared library, which implements the C-API, is built native on Linux or Windows (i.e. without ROS). Follow the instructions on [Build on Linux generic without ROS](../../INSTALL-GENERIC.md#build-on-linux-generic-without-ros) for Linux resp. [Build on Windows](../../INSTALL-GENERIC.md#build-on-windows) for Windows.
@@ -24,20 +26,12 @@ Run the following commands to build the shared library `libsick_scan_xd_shared_l
 ```
 # Clone repositories
 git clone https://github.com/SICKAG/libsick_ldmrs.git
-git clone https://github.com/SICKAG/msgpack11.git
-git clone https://github.com/SICKAG/sick_scan_xd.git
+git clone -b master https://github.com/SICKAG/sick_scan_xd.git
 # Build libsick_ldmrs library
 mkdir -p ./build
 mkdir -p ./libsick_ldmrs/build
 pushd libsick_ldmrs/build
 cmake -G "Unix Makefiles" ..
-make -j4
-sudo make -j4 install    
-popd
-# Build msgpack library
-mkdir -p ./msgpack11/build
-pushd msgpack11/build
-cmake -DMSGPACK11_BUILD_TESTS=0 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -G "Unix Makefiles" ..
 make -j4
 sudo make -j4 install    
 popd
@@ -60,10 +54,9 @@ After successful build, the shared library `libsick_scan_xd_shared_lib.so` and a
 
 Run the following commands to build the shared library `sick_scan_xd_shared_lib.dll` with Visual Studio 2019 on Windows:
 ```
-# Clone repositories
-git clone https://github.com/SICKAG/msgpack11.git
-git clone https://github.com/SICKAG/sick_scan_xd.git
-# Build libraries msgpack and sick_scan_xd_shared_lib.dll
+# Clone repository sick_scan_xd
+git clone -b master https://github.com/SICKAG/sick_scan_xd.git
+# Build libraries sick_scan_xd_shared_lib.dll
 call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
 set _os=x64
 set _cmake_string=Visual Studio 16
@@ -71,13 +64,6 @@ set _msvc=Visual Studio 2019
 set _cmake_build_dir=build
 cd sick_scan_xd
 if not exist %_cmake_build_dir% mkdir %_cmake_build_dir%
-if not exist %_cmake_build_dir%\msgpack11 mkdir %_cmake_build_dir%\msgpack11
-pushd %_cmake_build_dir%\msgpack11
-cmake -DMSGPACK11_BUILD_TESTS=0 -G "%_cmake_string%" ../../../msgpack11
-if %ERRORLEVEL% neq 0 ( @echo ERROR building %_cmake_string% msgpack11 with cmake & @pause )
-cmake --build . --clean-first --config Debug
-cmake --build . --clean-first --config Release
-popd
 pushd %_cmake_build_dir%
 cmake -DROS_VERSION=0 -G "%_cmake_string%" ..
 if %ERRORLEVEL% neq 0 ( @echo ERROR building %_cmake_string% sick_scan_xd with cmake & @pause )
@@ -181,6 +167,13 @@ The sick_scan_xd API can be used on Linux or Windows in any language with suppor
    * [Minimalistic usage example in Python](#minimalistic-usage-example-in-python)
    * [Complete usage example in C++](#complete-usage-example-in-c)
    * [Complete usage example in Python](#complete-usage-example-in-python)
+
+   Note for multiScan and picoScan lidars:
+
+   * The WaitNext-functions of the API return the next received message. For multiScan and picoScan, this can be a scan segment (i.e. a part of the full scan) or a fullframe poincloud (i.e. all scan points of a 360 degree scan). Depending on the timing, you may not receive all messages, i.e. you may e.g. receive scan points of different segments. We therefore recommend to register a message callback instead of a WaitNext-function. With a registered message callback, you will get all fullframe and segment pointcloud messages.
+
+   * For multiScan and picoScan, pointcloud messages can contain a scan segment (i.e. a part of the full scan) or a fullframe poincloud  (i.e. all scan points of a 360 degree scan). The type can be determined by the topic (default: "/cloud_unstructured_segments" for segments, "/cloud_unstructured_fullframe" for fullframe pointclouds) or by segment index (-1 for fullframe, 0 up to 11 for segment pointclouds).
+
 
 3. Close lidar and API by
     * `SickScanApiDeregister<MsgType>Msg`-functions
@@ -327,6 +320,45 @@ If ROS is not installed, [sick_scan_xd_api_test.py](../../test/python/sick_scan_
 
 Note: [sick_scan_api.py](../../python/api/sick_scan_api.py) requires python module numpy. On Windows without ROS, [sick_scan_xd_api_test.py](../../test/python/sick_scan_xd_api/sick_scan_xd_api_test.py) requires numpy and matplotlib. On Windows, we recommend to install and use Python either with Visual Studio 2019 or by installing from https://www.python.org/downloads/windows/ (python installer, embedded version not recommended). These python distributions provide the necessary packages and tools. Otherwise, please install numpy and matplotlib with `python -m pip install numpy` and `python -m pip install matplotlib` if not yet done.
 
+### Diagnostic
+
+The API provides the following functions for diagnostics:
+
+* SickScanApiRegisterDiagnosticMsg and SickScanApiDeregisterDiagnosticMsg: Register resp. deregister a callback to receive diagnostic messages. Diagnostic messages contain a status code and status message. The status code is one of the following numbers:
+   * OK=0 (normal operation)
+   * WARN=1 (warning)
+   * ERROR=2 (error, should not occure)
+   * INIT=3 (initialization after startup or reconnection)
+   * EXIT=4 (sick_scan_xd exiting)
+   
+   The status message is descriptional C-string. 
+   
+   A typical sequence of the status code is:
+   * INIT at startup, then 
+   * after lidar initialization is completed: change to OK (normal operation) and run, and
+   * EXIT at shutdown.
+   Diagnostic messages are generated whenever the status changed or an ERROR occured. Status code 2 (i.e. error) should not occure under normal operation.
+
+* SickScanApiRegisterLogMsg and SickScanApiDeregisterLogMsg: Register resp. deregister a callback to receive log messages. This callback will receive all informational or error messages printed on console. The log messages contain a log level (Info=1, Warn=2, Error=3, Fatal=4) and the log message.
+
+* SickScanApiGetStatus queries the current status. This function returns the current status code (OK=0 i.e. normal operation, WARN=1, ERROR=2, INIT=3 i.e. initialization after startup or reconnection or EXIT=4) and the descriptional status message.
+
+* SickScanApiSendSOPAS sends a SOPAS command (Cola-A) to the lidar and returns the response from the device.
+   * C++ example:
+      ```
+     char sopas_response_buffer[1024] = { 0 };
+     SickScanApiSendSOPAS(apiHandle, "sRN SCdevicestate", &sopas_response_buffer[0], (int32_t)sizeof(sopas_response_buffer); // returns "sRA SCdevicestate \x00" in sopas_response_buffer
+     ```
+
+   * Python example:
+      ```
+     sopas_response = SickScanApiSendSOPAS(sick_scan_library, api_handle, "sRN SCdevicestate")` # returns "sRA SCdevicestate \x00". 
+      ```
+   See the telegram listing for valid SOPAS commands.
+
+* SickScanApiSetVerboseLevel and SickScanApiGetVerboseLevel sets resp. returns the verbose level. The verbose level can be 0=DEBUG, 1=INFO, 2=WARN, 3=ERROR, 4=FATAL or 5=QUIET (equivalent to ros\:\:console\:\:levels). Default verbose level is 1 (INFO), i.e. sick_scan_xd prints informational, warnings and error messages on the console. Logging callbacks registered with SickScanApiRegisterLogMsg will receive all informational, warnings and error messages independant of the verbose level.
+
+To monitor sick_scan_xd resp. the lidar, it is recommended to register a callback for diagnostic messages using SickScanApiRegisterDiagnosticMsg and to display the error message in case for status code 2 (error). See [sick_scan_xd_api_test.cpp](../../test/src/sick_scan_xd_api/sick_scan_xd_api_test.cpp) and [sick_scan_xd_api_test.py](../../test/python/sick_scan_xd_api/sick_scan_xd_api_test.py) for an example.
 
 ### Simulation and unittest
 

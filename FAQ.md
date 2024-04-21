@@ -101,6 +101,16 @@ Summary:
 4. PC: Calculate back to system time of generation:
 System time of generation = System time of receiving - (TICK_TRANSMIT - TICK_GEN)/TICK_FREQUENCY
 
+## Laserscan messages with multiple frame ids
+
+:question: sick_scan_xd publishes laserscan messages for multiScan and picoScan with multiple frame ids and possibly inconsistent data. Which frame id is correct?
+
+:white_check_mark: By default, an echo filter is activated in the multiScan and picoScan launchfile. This echo filter suppresses multiple echos, e.g. echos from an object and a protective glass pane. The default configuration is "last echo only". In this case (i.e. one echo only), the fullframe laserscan messages on topic scan_fullframe all have identical frame ids for each layer, i.e. "world_\<layer\>". For the multiScan lidars with 16 layers, sick_scan_xd publishes laserscan messages with frame ids "world_1", "world_2" up to "world_16". For picoScan lidars with 1 layer, there is just one frame id "world_1".
+
+In case of multiple echos (i.e. echo filter is deactivated), each echo is published by a laserscan message with different frame ids "world_\<layer\>_\<echo_idx\>". For picoScan lidars with 3 echos, there are 3 frame ids "world_1_0", "world_1_1", "world_1_2" published. For multiScan lidars with 16 layers and 3 echos, there are 48 different frame ids published "world_1_0", "world_1_1", "world_1_2", "world_2_0", "world_2_1", "world_2_2", ... , "world_16_0", "world_16_1", "world_16_2". 
+
+This behaviour is intended, since a laserscan message can not contain multiple ranges for a single scan point at one azimuth angle. Therefore, there have to be different laserscan messages for each layer and each echo. Layer and echo of a laserscan message are identified by the frame id.
+
 ## Compilation errors
 
 :question: Compiler reports errors in file `/opt/ros/<distro>/include/sick_scan`
@@ -152,17 +162,6 @@ src/
 After doing this please rerun the command
 catkin_make_isolated --install --cmake-args -DROS_VERSION=1 -DLDMRS=0
 
-:question: cmake cannot find header msgpack11.hpp
-
-:white_check_mark: You probably forgot to checkout https://github.com/SICKAG/msgpack11.git. Please clone the following repositories:
-```
-git clone https://github.com/SICKAG/libsick_ldmrs.git
-git clone https://github.com/SICKAG/msgpack11.git
-git clone https://github.com/SICKAG/sick_scan_xd.git
-```
-and rebuild. See the build instructions [Build on Linux generic without ROS](INSTALL-GENERIC.md#build-on-linux-generic-without-ros), [Build on Linux ROS1](INSTALL-ROS1.md#build-on-linux-ros1), [Build on Linux ROS2](INSTALL-ROS2.md#build-on-linux-ros2), [Build on Windows](INSTALL-GENERIC.md#build-on-windows) or [Build on Windows ROS2](INSTALL-ROS2.md#build-on-windows-ros2) for further details.
-
-
 ## rviz shows a grey point cloud
 
 :question: rviz shows a grey point cloud. The size of points can be adjusted.
@@ -202,28 +201,7 @@ By default, filter settings are not overwritten, i.e. the filter settings stored
 
 :question: Independent of the configuration, the LMS1xxx pointcloud always displays 0.75 [deg] angular resolution
 
-:white_check_mark: Using higher resolutions, the LMS1xxx sends scan data interlaced. With configuration ang_res=0.75, the angular resolution of each scan is 0.75 [deg]. This means that each point cloud message also has a resolution of 0.75 [deg]. With configuration ang_res=0.375, the scan is generated interlaced: Each scan still has 0.75 [deg] resolution, but 2 consecutive scans are rotated by 0.375 [deg] against each other. I.e. 2 consecutive Pointcloud messages each have an angular resolution of 0.375 [deg] at half the frequency. Within a point cloud message the angular resolution is still 0.75 [deg].
-
-With configuration ang_res=0.1875 the scan is generated quadruple interlaced, i.e. 4 consecutive scans are each rotated by 0.1875 [deg]. Each scan is resolved with 0.75 [deg]; 4 scans or 4 pointclouds together (accumulated) result in a resolution of 0.1875 [deg] at a quarter of the frequency.
-
-You can see this in rviz by increasing the decay time to e.g. 4/75=0.054 or higher. The screenshot shows an example with the default setting ang_res=0.75:
-
-![LMS1xxx_0.7500_deg.png](doc/screenshots/LMS1xxx_0.7500_deg.png)
-
-The angular resolution is (just roughly measured) about atan(0.11/0.9) / 9 points = 0.77 [deg]. With ang_res=0.375 and decay=0.1 rviz shows twice the resolution:
-
-![LMS1xxx_0.7500_deg.png](doc/screenshots/LMS1xxx_0.3750_deg.png)
-
-Correspondingly, rviz shows four times the resolution with ang_res=0.1875 and decay=0.1:
-
-![LMS1xxx_0.7500_deg.png](doc/screenshots/LMS1xxx_0.1875_deg.png)
-
-To use the full angular resolution, the pointcloud must be accumulated by 2 resp. 4 messages. 
-
-The active configuration can be seen in the log output during scanner initialization, e.g.:
-```
-[ INFO] [1669294673.078608968]: sRA LMPscancfg: scan frequency = 75 Hz, angular resolution = 0.375 deg.
-```
+:white_check_mark: Using higher resolutions, the LMS1xxx sends scan data interlaced. See [interlacing.md](doc/interlacing.md) for details.
 
 ## "ERROR: Tcp::open: Failed to open TCP connection to 192.168.0.1, aborting."
 

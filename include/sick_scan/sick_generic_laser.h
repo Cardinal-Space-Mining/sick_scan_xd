@@ -17,6 +17,8 @@ enum NodeRunState
 
 bool startGenericLaser(int argc, char **argv, std::string nodeName, rosNodePtr nhPriv, int* exit_code);
 
+void joinGenericLaser(void);
+
 int mainGenericLaser(int argc, char **argv, std::string scannerName, rosNodePtr nh);
 
 void rosSignalHandler(int signalRecv);
@@ -28,6 +30,8 @@ std::string getVersionInfo();
 bool parseLaunchfileSetParameter(rosNodePtr nhPriv, int argc, char **argv);
 
 bool stopScannerAndExit(bool force_immediate_shutdown = false);
+
+bool convertSendSOPASCommand(const std::string& sopas_ascii_request, std::string& sopas_response, bool wait_for_reply = true);
 
 #endif
 

@@ -123,6 +123,7 @@ namespace sick_scan_xd
       CMD_APPLICATION_MODE_FIELD_ON,
       CMD_APPLICATION_MODE_FIELD_OFF,
       CMD_APPLICATION_MODE_RANGING_ON,
+      CMD_READ_ACTIVE_APPLICATIONS, // "sRN SetActiveApplications"
       CMD_SET_ACCESS_MODE_3,
       CMD_SET_ACCESS_MODE_3_SAFETY_SCANNER,
       CMD_SET_OUTPUT_RANGES,
@@ -241,6 +242,13 @@ namespace sick_scan_xd
      * @return Expected answer
      */
     std::vector<std::string> generateExpectedAnswerString(const std::vector<unsigned char> requestStr);
+
+    /**
+     * \brief Converts a given SOPAS command from ascii to binary (in case of binary communication), sends sopas (ascii or binary) and returns the response (if wait_for_reply:=true)
+     * \param [in] request the command to send.
+     * \param [in] cmdLen Length of the Comandstring in bytes used for Binary Mode only
+     */
+    virtual int convertSendSOPASCommand(const std::string& sopas_ascii_request, std::vector<unsigned char>* reply, bool wait_for_reply = true);
 
     int sendSopasAndCheckAnswer(std::string request, std::vector<unsigned char> *reply, int cmdId);
 
@@ -382,13 +390,6 @@ namespace sick_scan_xd
      */
     virtual int sendSOPASCommand(const char *request, std::vector<unsigned char> *reply, int cmdLen, bool wait_for_reply = true) = 0;
 
-    /// Converts a given SOPAS command from ascii to binary (in case of binary communication), sends sopas (ascii or binary) and returns the response (if wait_for_reply:=true)
-    /**
-     * \param [in] request the command to send.
-     * \param [in] cmdLen Length of the Comandstring in bytes used for Binary Mode only
-     */
-    virtual int convertSendSOPASCommand(const std::string& sopas_ascii_request, std::vector<unsigned char> *reply, bool wait_for_reply = true);
-
     virtual int readWithTimeout(size_t timeout_ms, char *buffer, int buffer_size, int *bytes_read, const std::vector<std::string>& datagram_keywords) = 0;
 
     /// Read a datagram from the device.
@@ -403,8 +404,8 @@ namespace sick_scan_xd
     virtual int get_datagram(rosNodePtr nh, rosTime &recvTimeStamp, unsigned char *receiveBuffer, int bufferSize, int *actual_length,
                              bool isBinaryProtocol, int *numberOfRemainingFifoEntries, const std::vector<std::string>& datagram_keywords) = 0;
 
-    /// Converts reply from sendSOPASCommand to string
     /**
+     * \brief Converts reply from sendSOPASCommand to string
      * \param [in] reply reply from sendSOPASCommand
      * \returns reply as string with special characters stripped out
      */
@@ -431,12 +432,15 @@ namespace sick_scan_xd
     */
     bool isCompatibleDevice(const std::string identStr) const;
 
+    bool switchColaProtocol(bool useBinaryCmd);
+
 #ifdef USE_DIAGNOSTIC_UPDATER
     std::shared_ptr<diagnostic_updater::Updater> diagnostics_;
 #endif
 
   private:
     SopasProtocol m_protocolId;
+    std::string cloud_topic_val = "cloud";
     // ROS
     rosPublisher<ros_sensor_msgs::LaserScan> pub_;
     rosPublisher<ros_std_msgs::String> datagram_pub_;
@@ -509,6 +513,8 @@ namespace sick_scan_xd
     bool setNewIpAddress(const std::string& ipNewIPAddr, bool useBinaryCmd);
 
     bool setNTPServerAndStart(const std::string& ipNewIPAddr, bool useBinaryCmd);
+
+    int readParseSafetyFields(bool useBinaryCmd);
 
     int readTimeOutInMs;
 

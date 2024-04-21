@@ -1,5 +1,20 @@
 ## Build on Linux ROS2
 
+To build resp. install sick_scan_xd on Linux with ROS-2, you can build sick_scan_xd from sources or install prebuilt binaries.
+
+## Install prebuilt binaries
+
+Run the following steps to install sick_scan_xd on Linux with ROS 2 humble:
+
+```
+sudo apt update
+sudo apt-get install ros-humble-sick-scan-xd
+```
+
+After successful installation, you can run sick_scan_xd using `ros2 launch sick_scan_xd <launchfile>.py`, e.g. `ros2 launch sick_scan_xd sick_multiscan.launch.py` for multiScan. sick_scan_xd can be removed by `sudo apt-get remove ros-humble-sick-scan-xd`.
+
+## Build from sources
+
 Run the following steps to build sick_scan_xd on Linux with ROS 2:
 
 1. Create a workspace folder, e.g. `sick_scan_ws` (or any other name):
@@ -8,13 +23,12 @@ Run the following steps to build sick_scan_xd on Linux with ROS 2:
    cd ./sick_scan_ws
    ```
 
-2. Clone repositories https://github.com/SICKAG/libsick_ldmrs, https://github.com/SICKAG/msgpack11.git and https://github.com/SICKAG/sick_scan_xd:
+2. Clone repositories https://github.com/SICKAG/libsick_ldmrs and https://github.com/SICKAG/sick_scan_xd:
    ```
    mkdir ./src
    pushd ./src
    git clone https://github.com/SICKAG/libsick_ldmrs.git
-   git clone https://github.com/SICKAG/msgpack11.git
-   git clone https://github.com/SICKAG/sick_scan_xd.git
+   git clone -b master https://github.com/SICKAG/sick_scan_xd.git
    popd
    rm -rf ./build ./build_isolated/ ./devel ./devel_isolated/ ./install ./install_isolated/ ./log/ # remove any files from a previous build
    ```
@@ -23,8 +37,6 @@ Run the following steps to build sick_scan_xd on Linux with ROS 2:
    ```
    source /opt/ros/foxy/setup.bash # replace foxy by your ros distro
    colcon build --packages-select libsick_ldmrs --event-handlers console_direct+
-   source ./install/setup.bash
-   colcon build --packages-select msgpack11 --cmake-args " -DMSGPACK11_BUILD_TESTS=0" --event-handlers console_direct+
    source ./install/setup.bash
    colcon build --packages-select sick_scan_xd --cmake-args " -DROS_VERSION=2" --event-handlers console_direct+
    source ./install/setup.bash
@@ -40,7 +52,7 @@ Note: libsick_ldmrs is only required to support LDMRS sensors. If you do not nee
    ```
    colcon build --packages-select sick_scan_xd --cmake-args " -DROS_VERSION=2" " -DLDMRS=0" --event-handlers console_direct+
    ```
-Note: msgpack11 is only required to support multiScan136/sick_scansegment_xd/picoScan150. If you do not need or want to support multiScan136/sick_scansegment_xd/picoScan150, you can skip building msgpack. To build sick_generic_caller without multiScan136/sick_scansegment_xd/picoScan150 support, switch off option `BUILD_WITH_SCANSEGMENT_XD_SUPPORT` in [CMakeLists.txt](./CMakeLists.txt) or call cmake with option `-DSCANSEGMENT_XD=0`:
+Note: To build sick_generic_caller without multiScan136/sick_scansegment_xd/picoScan150 support, switch off option `BUILD_WITH_SCANSEGMENT_XD_SUPPORT` in [CMakeLists.txt](./CMakeLists.txt) or call cmake with option `-DSCANSEGMENT_XD=0`:
    ```
    colcon build --packages-select sick_scan_xd --cmake-args " -DROS_VERSION=2" " -DSCANSEGMENT_XD=0" --event-handlers console_direct+
    ```
@@ -98,12 +110,11 @@ To install sick_scan_xd on Windows with ROS-2, follow the steps below:
    cd sick_scan_ws
    ```
 
-3. Clone repositories https://github.com/SICKAG/msgpack11.git and https://github.com/SICKAG/sick_scan_xd:
+3. Clone repository https://github.com/SICKAG/sick_scan_xd:
    ```
    mkdir .\src
    pushd .\src
-   git clone https://github.com/SICKAG/msgpack11.git
-   git clone https://github.com/SICKAG/sick_scan_xd.git
+   git clone -b master https://github.com/SICKAG/sick_scan_xd.git
    popd
    ```
 
@@ -125,15 +136,13 @@ To install sick_scan_xd on Windows with ROS-2, follow the steps below:
 
 6. Build sick_generic_caller:
    ```
-   colcon build --packages-select msgpack11 --cmake-args " -DMSGPACK11_BUILD_TESTS=0" --event-handlers console_direct+ 
-   call .\install\setup.bat
    colcon build --packages-select sick_scan_xd --cmake-args " -DROS_VERSION=2" --event-handlers console_direct+
    call .\install\setup.bat
    ```
 
 Note: LDMRS sensors are currently not supported on Windows.
 
-Note: msgpack11 is only required to support multiScan136/sick_scansegment_xd. If you do not need or want to support multiScan136/sick_scansegment_xd, you can skip building msgpack. To build sick_generic_caller without multiScan136/sick_scansegment_xd support, switch off option `BUILD_WITH_SCANSEGMENT_XD_SUPPORT` in [CMakeLists.txt](./CMakeLists.txt) or call cmake with option `-DSCANSEGMENT_XD=0`:
+Note: To build sick_generic_caller without multiScan136/sick_scansegment_xd support, switch off option `BUILD_WITH_SCANSEGMENT_XD_SUPPORT` in [CMakeLists.txt](./CMakeLists.txt) or call cmake with option `-DSCANSEGMENT_XD=0`:
    ```
    colcon build --packages-select sick_scan_xd --cmake-args " -DROS_VERSION=2" " -DSCANSEGMENT_XD=0" --event-handlers console_direct+
    ```

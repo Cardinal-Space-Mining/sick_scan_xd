@@ -159,7 +159,7 @@ namespace sick_scan_xd
      * @param[in] imu_enable: Imu data transfer enabled
      * @param[in] imu_udp_port: UDP port of imu data (if imu_enable is true)
      */
-    bool sendMultiScanStartCmd(const std::string& hostname, int port, const std::string& scanner_type, int scandataformat, bool imu_enable, int imu_udp_port);
+    bool sendMultiScanStartCmd(const std::string& hostname, int port, const std::string& scanner_type, int scandataformat, bool imu_enable, int imu_udp_port, int performanceprofilenumber);
 
     /*!
      * Sends the multiScan stop commands "sWN ScanDataEnable 0" and "sMN Run"
@@ -185,6 +185,15 @@ namespace sick_scan_xd
     bool writeMultiScanFiltersettings(int host_FREchoFilter, const std::string& host_LFPangleRangeFilter, const std::string& host_LFPlayerFilter, const std::string& scanner_type);
 
 #endif // defined SCANSEGMENT_XD_SUPPORT && SCANSEGMENT_XD_SUPPORT > 0
+
+    /*!
+     * Sends a sopas command and returns the lidar reply.
+     * @param[in] sopasCmd sopas command to send, f.e. "sEN ECRChangeArr 1"
+     * @param[out] sopasReplyBin response from lidar incl. start/stop byte
+     * @param[out] sopasReplyString sopasReplyBin converted to string
+     * @return true on success, false in case of errors.
+     */
+    bool sendSopasAndCheckAnswer(const std::string& sopasCmd, std::vector<unsigned char>& sopasReplyBin, std::string& sopasReplyString);
 
     /*!
     * Converts a hex string (hex_str: 4 byte hex value as string, little or big endian) to float.
@@ -220,15 +229,6 @@ namespace sick_scan_xd
     * Sends the SOPAS command "sMN Run", which applies previous send settings
     */
     bool sendRun();
-
-    /*!
-     * Sends a sopas command and returns the lidar reply.
-     * @param[in] sopasCmd sopas command to send, f.e. "sEN ECRChangeArr 1"
-     * @param[out] sopasReplyBin response from lidar incl. start/stop byte
-     * @param[out] sopasReplyString sopasReplyBin converted to string
-     * @return true on success, false in case of errors.
-     */
-    bool sendSopasAndCheckAnswer(const std::string& sopasCmd, std::vector<unsigned char>& sopasReplyBin, std::string& sopasReplyString);
 
     /*
      * Member data
