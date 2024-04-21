@@ -7,9 +7,6 @@
 #define SICK_SCAN_MESSAGE_SICKLOCRESULTPORTHEADERMSG_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -71,11 +68,7 @@ struct SickLocResultPortHeaderMsg_
    typedef uint32_t _serialnumber_type;
   _serialnumber_type serialnumber;
 
-#if __cplusplus > 201703L
-   typedef std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t> >  _fw_version_type;
-#else
    typedef std::vector<uint8_t, typename ContainerAllocator::template rebind<uint8_t>::other >  _fw_version_type;
-#endif
   _fw_version_type fw_version;
 
    typedef uint32_t _telegramcounter_type;

@@ -40,9 +40,6 @@
 #include "ros/exception.h"
 #include "ros/datatypes.h"
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <vector>
 #include <map>
 
@@ -376,11 +373,7 @@ struct VectorSerializer
 template<typename T, class ContainerAllocator>
 struct VectorSerializer<T, ContainerAllocator, typename std::enable_if<!mt::IsFixedSize<T>::value >::type >
 {
-#if __cplusplus > 201703L
-  typedef std::vector<T, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<T>> VecType;
-#else
   typedef std::vector<T, typename ContainerAllocator::template rebind<T>::other> VecType;
-#endif
   typedef typename VecType::iterator IteratorType;
   typedef typename VecType::const_iterator ConstIteratorType;
 
@@ -430,11 +423,7 @@ struct VectorSerializer<T, ContainerAllocator, typename std::enable_if<!mt::IsFi
 template<typename T, class ContainerAllocator>
 struct VectorSerializer<T, ContainerAllocator, typename std::enable_if<mt::IsSimple<T>::value >::type >
 {
-#if __cplusplus > 201703L
-  typedef std::vector<T, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<T>> VecType;
-#else
   typedef std::vector<T, typename ContainerAllocator::template rebind<T>::other> VecType;
-#endif
   typedef typename VecType::iterator IteratorType;
   typedef typename VecType::const_iterator ConstIteratorType;
 
@@ -477,11 +466,7 @@ template<typename T, class ContainerAllocator>
 struct VectorSerializer<T, ContainerAllocator, typename std::enable_if<mt::IsFixedSize<T>::value && !mt::IsSimple<T>::value >::type >
 // typename std::enable_if<std::__and_<mt::IsFixedSize<T>::value, std::__not_<mt::IsSimple<T>::value > > >::type >
 {
-#if __cplusplus > 201703L
-  typedef std::vector<T, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<T>> VecType;
-#else
   typedef std::vector<T, typename ContainerAllocator::template rebind<T>::other> VecType;
-#endif
   typedef typename VecType::iterator IteratorType;
   typedef typename VecType::const_iterator ConstIteratorType;
 

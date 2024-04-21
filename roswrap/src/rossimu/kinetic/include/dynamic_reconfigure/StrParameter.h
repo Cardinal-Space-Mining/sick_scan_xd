@@ -7,9 +7,6 @@
 #define DYNAMIC_RECONFIGURE_MESSAGE_STRPARAMETER_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -39,18 +36,10 @@ struct StrParameter_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
-#endif
   _name_type name;
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _value_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _value_type;
-#endif
   _value_type value;
 
 
@@ -195,17 +184,9 @@ struct Printer< ::dynamic_reconfigure::StrParameter_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::dynamic_reconfigure::StrParameter_<ContainerAllocator>& v)
   {
     s << indent << "name: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);
-#endif
     s << indent << "value: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.value);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.value);
-#endif
   }
 };
 

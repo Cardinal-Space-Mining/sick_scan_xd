@@ -7,9 +7,6 @@
 #define DYNAMIC_RECONFIGURE_MESSAGE_CONFIG_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -50,39 +47,19 @@ struct Config_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::dynamic_reconfigure::BoolParameter_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::dynamic_reconfigure::BoolParameter_<ContainerAllocator> > >  _bools_type;
-#else
    typedef std::vector< ::dynamic_reconfigure::BoolParameter_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::dynamic_reconfigure::BoolParameter_<ContainerAllocator> >::other >  _bools_type;
-#endif
   _bools_type bools;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::dynamic_reconfigure::IntParameter_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::dynamic_reconfigure::IntParameter_<ContainerAllocator> > >  _ints_type;
-#else
    typedef std::vector< ::dynamic_reconfigure::IntParameter_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::dynamic_reconfigure::IntParameter_<ContainerAllocator> >::other >  _ints_type;
-#endif
   _ints_type ints;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::dynamic_reconfigure::StrParameter_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::dynamic_reconfigure::StrParameter_<ContainerAllocator> > >  _strs_type;
-#else
    typedef std::vector< ::dynamic_reconfigure::StrParameter_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::dynamic_reconfigure::StrParameter_<ContainerAllocator> >::other >  _strs_type;
-#endif
   _strs_type strs;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::dynamic_reconfigure::DoubleParameter_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::dynamic_reconfigure::DoubleParameter_<ContainerAllocator> > >  _doubles_type;
-#else
    typedef std::vector< ::dynamic_reconfigure::DoubleParameter_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::dynamic_reconfigure::DoubleParameter_<ContainerAllocator> >::other >  _doubles_type;
-#endif
   _doubles_type doubles;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::dynamic_reconfigure::GroupState_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::dynamic_reconfigure::GroupState_<ContainerAllocator> > >  _groups_type;
-#else
    typedef std::vector< ::dynamic_reconfigure::GroupState_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::dynamic_reconfigure::GroupState_<ContainerAllocator> >::other >  _groups_type;
-#endif
   _groups_type groups;
 
 

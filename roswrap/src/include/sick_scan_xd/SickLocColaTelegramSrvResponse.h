@@ -7,9 +7,6 @@
 #define SICK_SCAN_MESSAGE_SICKLOCCOLATELEGRAMSRVRESPONSE_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -45,11 +42,7 @@ struct SickLocColaTelegramSrvResponse_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _cola_ascii_response_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _cola_ascii_response_type;
-#endif
   _cola_ascii_response_type cola_ascii_response;
 
    typedef uint32_t _send_timestamp_sec_type;
@@ -231,11 +224,7 @@ struct Printer< ::sick_scan_xd::SickLocColaTelegramSrvResponse_<ContainerAllocat
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::sick_scan_xd::SickLocColaTelegramSrvResponse_<ContainerAllocator>& v)
   {
     s << indent << "cola_ascii_response: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.cola_ascii_response);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.cola_ascii_response);
-#endif
     s << indent << "send_timestamp_sec: ";
     Printer<uint32_t>::stream(s, indent + "  ", v.send_timestamp_sec);
     s << indent << "send_timestamp_nsec: ";

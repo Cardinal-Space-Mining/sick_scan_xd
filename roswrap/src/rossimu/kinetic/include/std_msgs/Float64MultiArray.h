@@ -7,9 +7,6 @@
 #define STD_MSGS_MESSAGE_FLOAT64MULTIARRAY_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -43,11 +40,7 @@ struct Float64MultiArray_
    typedef  ::std_msgs::MultiArrayLayout_<ContainerAllocator>  _layout_type;
   _layout_type layout;
 
-#if __cplusplus > 201703L
-   typedef std::vector<double, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<double> >  _data_type;
-#else
    typedef std::vector<double, typename ContainerAllocator::template rebind<double>::other >  _data_type;
-#endif
   _data_type data;
 
 

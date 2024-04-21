@@ -7,9 +7,6 @@
 #define SENSOR_MSGS_MESSAGE_TIMEREFERENCE_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -48,11 +45,7 @@ struct TimeReference_
    typedef ros::Time _time_ref_type;
   _time_ref_type time_ref;
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _source_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _source_type;
-#endif
   _source_type source;
 
 
@@ -226,11 +219,7 @@ struct Printer< ::sensor_msgs::TimeReference_<ContainerAllocator> >
     s << indent << "time_ref: ";
     Printer<ros::Time>::stream(s, indent + "  ", v.time_ref);
     s << indent << "source: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.source);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.source);
-#endif
   }
 };
 

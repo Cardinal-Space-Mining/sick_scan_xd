@@ -7,9 +7,6 @@
 #define STD_MSGS_MESSAGE_INT32MULTIARRAY_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -43,11 +40,7 @@ struct Int32MultiArray_
    typedef  ::std_msgs::MultiArrayLayout_<ContainerAllocator>  _layout_type;
   _layout_type layout;
 
-#if __cplusplus > 201703L
-   typedef std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t> >  _data_type;
-#else
    typedef std::vector<int32_t, typename ContainerAllocator::template rebind<int32_t>::other >  _data_type;
-#endif
   _data_type data;
 
 

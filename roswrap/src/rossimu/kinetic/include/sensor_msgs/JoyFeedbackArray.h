@@ -7,9 +7,6 @@
 #define SENSOR_MSGS_MESSAGE_JOYFEEDBACKARRAY_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -38,11 +35,7 @@ struct JoyFeedbackArray_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::sensor_msgs::JoyFeedback_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sensor_msgs::JoyFeedback_<ContainerAllocator> > >  _array_type;
-#else
    typedef std::vector< ::sensor_msgs::JoyFeedback_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sensor_msgs::JoyFeedback_<ContainerAllocator> >::other >  _array_type;
-#endif
   _array_type array;
 
 

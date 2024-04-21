@@ -7,9 +7,6 @@
 #define SICK_SCAN_MESSAGE_SICKDEVSETLIDARCONFIGSRVRESPONSE_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>

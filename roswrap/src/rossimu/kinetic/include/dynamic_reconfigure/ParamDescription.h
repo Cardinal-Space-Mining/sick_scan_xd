@@ -7,9 +7,6 @@
 #define DYNAMIC_RECONFIGURE_MESSAGE_PARAMDESCRIPTION_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -45,35 +42,19 @@ struct ParamDescription_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
-#endif
   _name_type name;
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _type_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _type_type;
-#endif
   _type_type type;
 
    typedef uint32_t _level_type;
   _level_type level;
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _description_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _description_type;
-#endif
   _description_type description;
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _edit_method_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _edit_method_type;
-#endif
   _edit_method_type edit_method;
 
 
@@ -224,31 +205,15 @@ struct Printer< ::dynamic_reconfigure::ParamDescription_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::dynamic_reconfigure::ParamDescription_<ContainerAllocator>& v)
   {
     s << indent << "name: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);
-#endif
     s << indent << "type: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.type);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.type);
-#endif
     s << indent << "level: ";
     Printer<uint32_t>::stream(s, indent + "  ", v.level);
     s << indent << "description: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.description);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.description);
-#endif
     s << indent << "edit_method: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.edit_method);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.edit_method);
-#endif
   }
 };
 

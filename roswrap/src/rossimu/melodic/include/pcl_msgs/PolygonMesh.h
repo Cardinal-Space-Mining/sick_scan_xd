@@ -7,9 +7,6 @@
 #define PCL_MSGS_MESSAGE_POLYGONMESH_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -50,11 +47,7 @@ struct PolygonMesh_
    typedef  ::sensor_msgs::PointCloud2_<ContainerAllocator>  _cloud_type;
   _cloud_type cloud;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::pcl_msgs::Vertices_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::pcl_msgs::Vertices_<ContainerAllocator> > >  _polygons_type;
-#else
    typedef std::vector< ::pcl_msgs::Vertices_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::pcl_msgs::Vertices_<ContainerAllocator> >::other >  _polygons_type;
-#endif
   _polygons_type polygons;
 
 

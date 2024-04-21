@@ -7,9 +7,6 @@
 #define DIAGNOSTIC_MSGS_MESSAGE_SELFTESTRESPONSE_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -42,21 +39,13 @@ struct SelfTestResponse_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _id_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _id_type;
-#endif
   _id_type id;
 
    typedef int8_t _passed_type;
   _passed_type passed;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::diagnostic_msgs::DiagnosticStatus_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::diagnostic_msgs::DiagnosticStatus_<ContainerAllocator> > >  _status_type;
-#else
    typedef std::vector< ::diagnostic_msgs::DiagnosticStatus_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::diagnostic_msgs::DiagnosticStatus_<ContainerAllocator> >::other >  _status_type;
-#endif
   _status_type status;
 
 
@@ -227,11 +216,7 @@ struct Printer< ::diagnostic_msgs::SelfTestResponse_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::diagnostic_msgs::SelfTestResponse_<ContainerAllocator>& v)
   {
     s << indent << "id: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.id);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.id);
-#endif
     s << indent << "passed: ";
     Printer<int8_t>::stream(s, indent + "  ", v.passed);
     s << indent << "status[]" << std::endl;

@@ -3,11 +3,12 @@
 # killall and cleanup after exit
 function killall_cleanup()
 {
-  sleep 1 ; killall -SIGINT rviz2
-  sleep 1 ; killall -SIGINT sick_generic_caller
-  sleep 1 ; pkill -f multiscan_sopas_test_server.py
-  sleep 1 ; killall -9 rviz2
-  sleep 1 ; killall -9 sick_generic_caller
+  sleep 3 ; killall sick_generic_caller
+  sleep 3 ; killall rviz2
+  sleep 3 ; pkill -f multiscan_sopas_test_server.py
+  sleep 3 ; pkill -f multiscan_pcap_player.py
+  sleep 3 ; killall -9 rviz2
+  sleep 3 ; killall -9 sick_generic_caller
 }
 
 # 
@@ -16,8 +17,10 @@ function killall_cleanup()
 
 pushd ../../../..
 printf "\033c"
-if [ -f /opt/ros/eloquent/setup.bash ] ; then source /opt/ros/eloquent/setup.bash ; fi
-if [ -f /opt/ros/foxy/setup.bash     ] ; then source /opt/ros/foxy/setup.bash     ; fi
+if   [ -f /opt/ros/humble/setup.bash   ] ; then source /opt/ros/humble/setup.bash
+elif [ -f /opt/ros/foxy/setup.bash     ] ; then source /opt/ros/foxy/setup.bash
+elif [ -f /opt/ros/eloquent/setup.bash ] ; then source /opt/ros/eloquent/setup.bash
+fi
 source ./install/setup.bash
 killall_cleanup
 sleep 1
@@ -43,9 +46,9 @@ echo -e "\nPlaying pcapng-files to emulate multiScan\n"
 python3 ./src/sick_scan_xd/test/python/multiscan_pcap_player.py --pcap_filename=./src/sick_scan_xd/test/emulator/scandata/20231009-multiscan-compact-imu-01.pcapng --udp_port=-1 --repeat=1 --verbose=0 --max_seconds=15 --filter=pcap_filter_multiscan_hildesheim
 # 20230607-multiscan-compact-v4-5layer.pcapng: compact, 5 layer, no imu
 python3 ./src/sick_scan_xd/test/python/multiscan_pcap_player.py --pcap_filename=./src/sick_scan_xd/test/emulator/scandata/20230607-multiscan-compact-v4-5layer.pcapng --udp_port=-1 --repeat=1 --verbose=0 --max_seconds=15 --filter=pcap_filter_multiscan_hildesheim
-sleep 3
+
 
 # Shutdown
-echo -e "run_lidar3d.bash finished, killing all processes ..."
+echo -e "run sick_scansegment_xd finished, killing all processes ..."
 killall_cleanup
 popd

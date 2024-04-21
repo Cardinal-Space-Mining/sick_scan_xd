@@ -7,9 +7,6 @@
 #define DIAGNOSTIC_MSGS_MESSAGE_ADDDIAGNOSTICSREQUEST_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -37,11 +34,7 @@ struct AddDiagnosticsRequest_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _load_namespace_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _load_namespace_type;
-#endif
   _load_namespace_type load_namespace;
 
 
@@ -200,11 +193,7 @@ struct Printer< ::diagnostic_msgs::AddDiagnosticsRequest_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::diagnostic_msgs::AddDiagnosticsRequest_<ContainerAllocator>& v)
   {
     s << indent << "load_namespace: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.load_namespace);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.load_namespace);
-#endif
   }
 };
 

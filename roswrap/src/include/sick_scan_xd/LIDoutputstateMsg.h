@@ -7,9 +7,6 @@
 #define SICK_SCAN_MESSAGE_LIDOUTPUTSTATEMSG_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -71,18 +68,10 @@ struct LIDoutputstateMsg_
    typedef uint32_t _system_counter_type;
   _system_counter_type system_counter;
 
-#if __cplusplus > 201703L
-   typedef std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t> >  _output_state_type;
-#else
    typedef std::vector<uint8_t, typename ContainerAllocator::template rebind<uint8_t>::other >  _output_state_type;
-#endif
   _output_state_type output_state;
 
-#if __cplusplus > 201703L
-   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t> >  _output_count_type;
-#else
    typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _output_count_type;
-#endif
   _output_count_type output_count;
 
    typedef uint16_t _time_state_type;

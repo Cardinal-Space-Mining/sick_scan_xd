@@ -7,9 +7,6 @@
 #define SICK_SCAN_MESSAGE_SICKDEVSETLIDARCONFIGSRVREQUEST_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -90,11 +87,7 @@ struct SickDevSetLidarConfigSrvRequest_
    typedef uint8_t _upsidedown_type;
   _upsidedown_type upsidedown;
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _ip_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _ip_type;
-#endif
   _ip_type ip;
 
    typedef uint32_t _port_type;
@@ -328,11 +321,7 @@ struct Printer< ::sick_scan_xd::SickDevSetLidarConfigSrvRequest_<ContainerAlloca
     s << indent << "upsidedown: ";
     Printer<uint8_t>::stream(s, indent + "  ", v.upsidedown);
     s << indent << "ip: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.ip);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.ip);
-#endif
     s << indent << "port: ";
     Printer<uint32_t>::stream(s, indent + "  ", v.port);
     s << indent << "interfacetype: ";

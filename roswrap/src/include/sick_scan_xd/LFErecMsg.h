@@ -7,9 +7,6 @@
 #define SICK_SCAN_MESSAGE_LFERECMSG_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -49,11 +46,7 @@ struct LFErecMsg_
    typedef uint16_t _fields_number_type;
   _fields_number_type fields_number;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::sick_scan_xd::LFErecFieldMsg_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sick_scan_xd::LFErecFieldMsg_<ContainerAllocator> > >  _fields_type;
-#else
    typedef std::vector< ::sick_scan_xd::LFErecFieldMsg_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sick_scan_xd::LFErecFieldMsg_<ContainerAllocator> >::other >  _fields_type;
-#endif
   _fields_type fields;
 
 

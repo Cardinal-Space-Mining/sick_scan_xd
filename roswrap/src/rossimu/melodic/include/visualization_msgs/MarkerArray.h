@@ -7,9 +7,6 @@
 #define VISUALIZATION_MSGS_MESSAGE_MARKERARRAY_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -38,11 +35,7 @@ struct MarkerArray_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::visualization_msgs::Marker_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::visualization_msgs::Marker_<ContainerAllocator> > >  _markers_type;
-#else
    typedef std::vector< ::visualization_msgs::Marker_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::visualization_msgs::Marker_<ContainerAllocator> >::other >  _markers_type;
-#endif
   _markers_type markers;
 
 

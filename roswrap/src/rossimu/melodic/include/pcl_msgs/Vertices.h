@@ -7,9 +7,6 @@
 #define PCL_MSGS_MESSAGE_VERTICES_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -37,11 +34,7 @@ struct Vertices_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t> >  _vertices_type;
-#else
    typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _vertices_type;
-#endif
   _vertices_type vertices;
 
 

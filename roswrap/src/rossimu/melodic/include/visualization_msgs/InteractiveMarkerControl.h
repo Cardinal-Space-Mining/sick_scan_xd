@@ -7,9 +7,6 @@
 #define VISUALIZATION_MSGS_MESSAGE_INTERACTIVEMARKERCONTROL_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -53,11 +50,7 @@ struct InteractiveMarkerControl_
 
 
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _name_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _name_type;
-#endif
   _name_type name;
 
    typedef  ::geometry_msgs::Quaternion_<ContainerAllocator>  _orientation_type;
@@ -72,21 +65,13 @@ struct InteractiveMarkerControl_
    typedef uint8_t _always_visible_type;
   _always_visible_type always_visible;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::visualization_msgs::Marker_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::visualization_msgs::Marker_<ContainerAllocator> > >  _markers_type;
-#else
    typedef std::vector< ::visualization_msgs::Marker_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::visualization_msgs::Marker_<ContainerAllocator> >::other >  _markers_type;
-#endif
   _markers_type markers;
 
    typedef uint8_t _independent_marker_orientation_type;
   _independent_marker_orientation_type independent_marker_orientation;
 
-#if __cplusplus > 201703L
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> >  _description_type;
-#else
    typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _description_type;
-#endif
   _description_type description;
 
 
@@ -514,11 +499,7 @@ struct Printer< ::visualization_msgs::InteractiveMarkerControl_<ContainerAllocat
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::visualization_msgs::InteractiveMarkerControl_<ContainerAllocator>& v)
   {
     s << indent << "name: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.name);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.name);
-#endif
     s << indent << "orientation: ";
     s << std::endl;
     Printer< ::geometry_msgs::Quaternion_<ContainerAllocator> >::stream(s, indent + "  ", v.orientation);
@@ -539,11 +520,7 @@ struct Printer< ::visualization_msgs::InteractiveMarkerControl_<ContainerAllocat
     s << indent << "independent_marker_orientation: ";
     Printer<uint8_t>::stream(s, indent + "  ", v.independent_marker_orientation);
     s << indent << "description: ";
-#if __cplusplus > 201703L
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char> > >::stream(s, indent + "  ", v.description);
-#else
     Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.description);
-#endif
   }
 };
 

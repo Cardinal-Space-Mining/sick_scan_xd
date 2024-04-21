@@ -7,9 +7,6 @@
 #define SICK_SCAN_MESSAGE_SICKLOCRESULTPORTTESTCASEMSG_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -46,11 +43,7 @@ struct SickLocResultPortTestcaseMsg_
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
-#if __cplusplus > 201703L
-   typedef std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t> >  _binary_data_type;
-#else
    typedef std::vector<uint8_t, typename ContainerAllocator::template rebind<uint8_t>::other >  _binary_data_type;
-#endif
   _binary_data_type binary_data;
 
    typedef  ::sick_scan_xd::SickLocResultPortTelegramMsg_<ContainerAllocator>  _telegram_msg_type;

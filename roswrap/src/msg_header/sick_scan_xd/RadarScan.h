@@ -7,9 +7,6 @@
 #define SICK_SCAN_MESSAGE_RADARSCAN_H
 
 
-#if __cplusplus > 201703L
-#include <memory>
-#endif
 #include <string>
 #include <vector>
 #include <map>
@@ -56,11 +53,7 @@ struct RadarScan_
    typedef  ::sensor_msgs::PointCloud2_<ContainerAllocator>  _targets_type;
   _targets_type targets;
 
-#if __cplusplus > 201703L
-   typedef std::vector< ::sick_scan_xd::RadarObject_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::sick_scan_xd::RadarObject_<ContainerAllocator> > >  _objects_type;
-#else
    typedef std::vector< ::sick_scan_xd::RadarObject_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::sick_scan_xd::RadarObject_<ContainerAllocator> >::other >  _objects_type;
-#endif
   _objects_type objects;
 
 
