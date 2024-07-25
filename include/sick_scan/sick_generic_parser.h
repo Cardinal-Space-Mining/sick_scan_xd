@@ -204,6 +204,9 @@ namespace sick_scan_xd
 
     bool getFREchoFilterAvailable(void);
 
+    void setScandatacfgAzimuthTableSupported(bool _scandatacfgAzimuthTableSupported);
+    bool getScandatacfgAzimuthTableSupported(void) const;
+
   private:
     std::string scannerName;
     int numberOfLayers;
@@ -229,7 +232,7 @@ namespace sick_scan_xd
     bool useWriteOutputRanges;
     bool waitForReady;
     bool frEchoFilterAvailable = false;
-
+    bool scandatacfgAzimuthTableSupported = false;
   };
 
 
@@ -244,7 +247,7 @@ namespace sick_scan_xd
                                ros_sensor_msgs::LaserScan &msg, int &numEchos, int &echoMask);
 
 
-    void checkScanTiming(float time_increment, float scan_time, float angle_increment, float tol);
+    bool checkScanTiming(float time_increment, float scan_time, float angle_increment, float tol);
 
     void set_range_min(float min);
 

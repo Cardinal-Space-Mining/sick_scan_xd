@@ -26,16 +26,16 @@ for %%i in ( .\install\sick_scan_xd\lib .\install\sick_scan_xd\lib\sick_scan_xd 
 )
 
 call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
-if exist c:\dev\ros2_foxy\local_setup.bat call c:\dev\ros2_foxy\local_setup.bat
-if exist c:\opt\ros\foxy\x64\setup.bat call c:\opt\ros\foxy\x64\setup.bat
+rem if exist c:\dev\ros2_foxy\local_setup.bat call c:\dev\ros2_foxy\local_setup.bat
+rem if exist c:\opt\ros\foxy\x64\setup.bat call c:\opt\ros\foxy\x64\setup.bat
+if exist c:\opt\ros\humble\x64\setup.bat ( call c:\opt\ros\humble\x64\setup.bat )
 rem set PATH=%ProgramFiles%\CMake\bin;%ProgramFiles(x86)%\Microsoft Visual Studio\Shared\Python36_64;%ProgramFiles(x86)%\Microsoft Visual Studio\Shared\Python37_64;%PATH%
 rem set PATH=c:\vcpkg\installed\x64-windows\bin;%PATH%
 
 REM 
-REM Build msgpack11 and sick_scan_xd on Windows with colcon for ROS2
+REM Build sick_scan_xd on Windows with colcon for ROS2
 REM 
 
-rem colcon build --packages-select msgpack11 --cmake-args " -DMSGPACK11_BUILD_TESTS=0" --event-handlers console_direct+ 
 colcon build --packages-select sick_scan_xd --cmake-args " -DROS_VERSION=2" " -DCMAKE_ENABLE_EMULATOR=1" --event-handlers "console_direct+"
 call .\install\setup.bat
 start "sick_scan_xd.sln" .\build\sick_scan_xd\sick_scan_xd.sln

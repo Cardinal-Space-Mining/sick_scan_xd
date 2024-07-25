@@ -18,6 +18,8 @@ template <typename HandleType, class MsgType> std::mutex sick_scan_xd::SickWaitF
 
 static std::string s_scannerName = "sick_scan";
 static std::map<SickScanApiHandle,std::string> s_api_caller;
+static int s_argc = 0;
+static char** s_argv = 0; // deep copy of argv commandline arguments
 static std::vector<void*> s_malloced_resources;
 static sick_scan_xd::SickCallbackHandler<SickScanApiHandle,SickScanPointCloudMsg>          s_callback_handler_cartesian_pointcloud_messages;
 static sick_scan_xd::SickCallbackHandler<SickScanApiHandle,SickScanPointCloudMsg>          s_callback_handler_polar_pointcloud_messages;
@@ -716,11 +718,21 @@ int32_t SickScanApiInitByLaunchfile(SickScanApiHandle apiHandle, const char* lau
         }
         // Split launchfile_args by spaces
         ROS_INFO_STREAM("SickScanApiInitByLaunchfile: launchfile_args = \"" << launchfile_args << "\"");
-        std::istringstream args_stream(launchfile_args);
+        std::string args_string(launchfile_args);
         std::string arg;
         std::vector<std::string> args;
-        while (getline(args_stream, arg, ' ' ))
-            args.push_back(arg);
+        std::string endToken = ".launch";
+        std::size_t pos = args_string.find(endToken);
+        std::string filepath = args_string.substr(0, pos + endToken.length());
+        args_string.erase(0, pos + endToken.length() + 1);
+        args.push_back(filepath);
+        while ((pos = args_string.find(' ')) != std::string::npos) 
+        {
+          arg = args_string.substr(0, pos);
+          args.push_back(arg);
+          args_string.erase(0, pos + 1);
+        }
+        args.push_back(args_string);
         // Convert to argc, argv
         int argc = args.size() + 1;
         char** argv = (char**)malloc(argc * sizeof(char*));
@@ -759,9 +771,16 @@ int32_t SickScanApiInitByCli(SickScanApiHandle apiHandle, int argc, char** argv)
             ROS_ERROR_STREAM("## ERROR SickScanApiInitByCli(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
         }
+        // Create a deep copy of argv
+        s_argc = argc;
+        s_argv = (char**)malloc(argc * sizeof(char*));
         std::stringstream cli_params;
         for(int n = 0; n < argc; n++)
+        {
+            s_argv[n] = (char*)malloc((strlen(argv[n]) + 1) * sizeof(char));
+            strcpy(s_argv[n],argv[n]);
             cli_params << (n > 0 ? " ": "")  << argv[n];
+        }
         ROS_INFO_STREAM("SickScanApiInitByCli: " << cli_params.str());
         
         // Start sick_scan event loop
@@ -769,7 +788,7 @@ int32_t SickScanApiInitByCli(SickScanApiHandle apiHandle, int argc, char** argv)
         rosNodePtr node = castApiHandleToNode(apiHandle);
         try
         {
-            if (!startGenericLaser(argc, argv, s_scannerName, node, &exit_code) || exit_code != sick_scan_xd::ExitSuccess)
+            if (!startGenericLaser(s_argc, s_argv, s_scannerName, node, &exit_code) || exit_code != sick_scan_xd::ExitSuccess)
             {
                 ROS_ERROR_STREAM("## ERROR SickScanApiInitByCli(): startGenericLaser() failed, could not start generic laser event loop");
                 return SICK_SCAN_API_ERROR;
@@ -783,7 +802,7 @@ int32_t SickScanApiInitByCli(SickScanApiHandle apiHandle, int argc, char** argv)
         try
         {
             ROS_WARN_STREAM("SickScanApiInitByCli(): running sick_generic_laser in main thread ...");
-            exit_code = mainGenericLaser(argc, argv, s_scannerName, node);
+            exit_code = mainGenericLaser(s_argc, s_argv, s_scannerName, node);
             if (exit_code != sick_scan_xd::ExitSuccess)
             {
                 ROS_ERROR_STREAM("## ERROR SickScanApiInitByCli(): mainGenericLaser() failed");
@@ -819,6 +838,15 @@ int32_t SickScanApiClose(SickScanApiHandle apiHandle)
         }
         // stopScannerAndExit(true);
         rosSignalHandler(SIGINT); // Send Ctrl-C for gentle shutdown
+        sick_scan_xd::WaitForCartesianPointCloudMessageHandler::shutdown();
+        sick_scan_xd::WaitForPolarPointCloudMessageHandler::shutdown();
+        sick_scan_xd::WaitForImuMessageHandler::shutdown();
+        sick_scan_xd::WaitForLFErecMessageHandler::shutdown();
+        sick_scan_xd::WaitForLIDoutputstateMessageHandler::shutdown();
+        sick_scan_xd::WaitForRadarScanMessageHandler::shutdown();
+        sick_scan_xd::WaitForLdmrsObjectArrayMessageHandler::shutdown();
+        sick_scan_xd::WaitForVisualizationMarkerMessageHandler::shutdown();
+        sick_scan_xd::WaitForNAVPOSDataMessageHandler::shutdown();
         return SICK_SCAN_API_SUCCESS;
     }
     catch(const std::exception& e)
@@ -1365,6 +1393,42 @@ int32_t SickScanApiGetStatus(SickScanApiHandle apiHandle, int32_t* status_code, 
     return SICK_SCAN_API_ERROR;
 }
 
+// Sends a SOPAS command like "sRN SCdevicestate" or "sRN ContaminationResult" and returns the lidar response
+int32_t SickScanApiSendSOPAS(SickScanApiHandle apiHandle, const char* sopas_command, char* sopas_response_buffer, int32_t response_buffer_size)
+{
+  try
+  {
+    if (apiHandle == 0)
+    {
+      ROS_ERROR_STREAM("## ERROR SickScanApiSendSOPAS(): invalid apiHandle");
+      return SICK_SCAN_API_NOT_INITIALIZED;
+    }
+    std::string sopas_ascii_request = sopas_command;
+    std::string sopas_response;
+    if (!convertSendSOPASCommand(sopas_ascii_request, sopas_response, true))
+    {
+      ROS_ERROR_STREAM("## ERROR SickScanApiSendSOPAS(): convertSendSOPASCommand(\"" << sopas_ascii_request << "\") failed");
+      return SICK_SCAN_API_ERROR;
+    }
+    if (sopas_response.length() >= response_buffer_size)
+    {
+      ROS_WARN_STREAM("## ERROR SickScanApiSendSOPAS(\"" << sopas_ascii_request << "\"): response_buffer_size " << response_buffer_size << " too small, response \"" << sopas_response << "\" requires at least " << (sopas_response.length() + 1) << " bytes, response truncated");
+    }
+    strncpy(sopas_response_buffer, sopas_response.c_str(), response_buffer_size - 1);
+    sopas_response_buffer[response_buffer_size - 1] = '\0';
+    return SICK_SCAN_API_SUCCESS;
+  }
+  catch (const std::exception& e)
+  {
+    ROS_ERROR_STREAM("## ERROR SickScanApiSendSOPAS(): exception " << e.what());
+  }
+  catch (...)
+  {
+    ROS_ERROR_STREAM("## ERROR SickScanApiSendSOPAS(): unknown exception ");
+  }
+  return SICK_SCAN_API_ERROR;
+}
+
 // Set verbose level 0=DEBUG, 1=INFO, 2=WARN, 3=ERROR, 4=FATAL or 5=QUIET (equivalent to ros::console::levels),
 // i.e. print messages on console above the given verbose level.
 // Default verbose level is 1 (INFO), i.e. print informational, warnings and error messages.
@@ -1446,10 +1510,16 @@ int32_t SickScanApiWaitNextCartesianPointCloudMsg(SickScanApiHandle apiHandle, S
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextCartesianPointCloudMsg(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
+        }
+        if (!rosOk())
+        {
+          ROS_WARN_STREAM("SickScanApiWaitNext closing or uninitialized");
+          return SICK_SCAN_API_NOT_INITIALIZED;
         }
         rosNodePtr node = castApiHandleToNode(apiHandle);
         if (!sick_scan_xd::isCartesianPointcloudListenerRegistered(node, sick_scan_xd::WaitForCartesianPointCloudMessageHandler::messageCallback))
@@ -1490,10 +1560,16 @@ int32_t SickScanApiWaitNextPolarPointCloudMsg(SickScanApiHandle apiHandle, SickS
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextPolarPointCloudMsg(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
+        }
+        if (!rosOk())
+        {
+          ROS_WARN_STREAM("SickScanApiWaitNext closing or uninitialized");
+          return SICK_SCAN_API_NOT_INITIALIZED;
         }
         rosNodePtr node = castApiHandleToNode(apiHandle);
         if (!sick_scan_xd::isPolarPointcloudListenerRegistered(node, sick_scan_xd::WaitForPolarPointCloudMessageHandler::messageCallback))
@@ -1545,10 +1621,16 @@ int32_t SickScanApiWaitNextImuMsg(SickScanApiHandle apiHandle, SickScanImuMsg* m
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextImuMsg(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
+        }
+        if (!rosOk())
+        {
+          ROS_WARN_STREAM("SickScanApiWaitNext closing or uninitialized");
+          return SICK_SCAN_API_NOT_INITIALIZED;
         }
         rosNodePtr node = castApiHandleToNode(apiHandle);
         if (!sick_scan_xd::isImuListenerRegistered(node, sick_scan_xd::WaitForImuMessageHandler::messageCallback))
@@ -1595,10 +1677,16 @@ int32_t SickScanApiWaitNextLFErecMsg(SickScanApiHandle apiHandle, SickScanLFErec
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextLFErecMsg(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
+        }
+        if (!rosOk())
+        {
+          ROS_WARN_STREAM("SickScanApiWaitNext closing or uninitialized");
+          return SICK_SCAN_API_NOT_INITIALIZED;
         }
         rosNodePtr node = castApiHandleToNode(apiHandle);
         if (!sick_scan_xd::isLFErecListenerRegistered(node, sick_scan_xd::WaitForLFErecMessageHandler::messageCallback))
@@ -1645,10 +1733,16 @@ int32_t SickScanApiWaitNextLIDoutputstateMsg(SickScanApiHandle apiHandle, SickSc
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextLIDoutputstateMsg(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
+        }
+        if (!rosOk())
+        {
+          ROS_WARN_STREAM("SickScanApiWaitNext closing or uninitialized");
+          return SICK_SCAN_API_NOT_INITIALIZED;
         }
         rosNodePtr node = castApiHandleToNode(apiHandle);
         if (!sick_scan_xd::isLIDoutputstateListenerRegistered(node, sick_scan_xd::WaitForLIDoutputstateMessageHandler::messageCallback))
@@ -1695,10 +1789,16 @@ int32_t SickScanApiWaitNextRadarScanMsg(SickScanApiHandle apiHandle, SickScanRad
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextRadarScanMsg(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
+        }
+        if (!rosOk())
+        {
+          ROS_WARN_STREAM("SickScanApiWaitNext closing or uninitialized");
+          return SICK_SCAN_API_NOT_INITIALIZED;
         }
         rosNodePtr node = castApiHandleToNode(apiHandle);
         if (!sick_scan_xd::isRadarScanListenerRegistered(node, sick_scan_xd::WaitForRadarScanMessageHandler::messageCallback))
@@ -1745,10 +1845,16 @@ int32_t SickScanApiWaitNextLdmrsObjectArrayMsg(SickScanApiHandle apiHandle, Sick
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextLdmrsObjectArrayMsg(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
+        }
+        if (!rosOk())
+        {
+          ROS_WARN_STREAM("SickScanApiWaitNext closing or uninitialized");
+          return SICK_SCAN_API_NOT_INITIALIZED;
         }
         rosNodePtr node = castApiHandleToNode(apiHandle);
         if (!sick_scan_xd::isLdmrsObjectArrayListenerRegistered(node, sick_scan_xd::WaitForLdmrsObjectArrayMessageHandler::messageCallback))
@@ -1795,10 +1901,16 @@ int32_t SickScanApiWaitNextVisualizationMarkerMsg(SickScanApiHandle apiHandle, S
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextVisualizationMarkerMsg(): invalid apiHandle");
             return SICK_SCAN_API_NOT_INITIALIZED;
+        }
+        if (!rosOk())
+        {
+          ROS_WARN_STREAM("SickScanApiWaitNext closing or uninitialized");
+          return SICK_SCAN_API_NOT_INITIALIZED;
         }
         rosNodePtr node = castApiHandleToNode(apiHandle);
         if (!sick_scan_xd::isVisualizationMarkerListenerRegistered(node, sick_scan_xd::WaitForVisualizationMarkerMessageHandler::messageCallback))
@@ -1968,6 +2080,7 @@ int32_t SickScanApiWaitNextNavPoseLandmarkMsg(SickScanApiHandle apiHandle, SickS
     int32_t ret_val = SICK_SCAN_API_ERROR;
     try
     {
+        memset(msg, 0, sizeof(*msg));
         if (apiHandle == 0)
         {
             ROS_ERROR_STREAM("## ERROR SickScanApiWaitNextNavPoseLandmarkMsg(): invalid apiHandle");

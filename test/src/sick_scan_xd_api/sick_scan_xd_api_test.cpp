@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
+#include <string>
 #include <thread>
+#include <vector>
 #ifdef _MSC_VER
 #include <conio.h>
 #else
@@ -242,14 +244,14 @@ static void apiTestLogMsgCallback(SickScanApiHandle apiHandle, const SickScanLog
   	printf("[WARN]: apiTestLogMsgCallback(apiHandle:%p): log_level = %d (WARNING), log_message = %s\n", apiHandle, msg->log_level, msg->log_message);
   else if (msg->log_level >= 3) // log_level defined in ros::console::levels: Error=3, Fatal=4
   	printf("[ERROR]: apiTestLogMsgCallback(apiHandle:%p): log_level = %d (ERROR), log_message = %s\n", apiHandle, msg->log_level, msg->log_message);
-  else
+  else if (false) // debugging
   	printf("[Info]: apiTestLogMsgCallback(apiHandle:%p): log_level = %d, log_message = %s\n", apiHandle, msg->log_level, msg->log_message);
 }
 
 // Receive lidar message by SickScanApiWaitNext-functions ("message polling")
 static void runSickScanApiTestWaitNext(SickScanApiHandle* apiHandle, bool* run_flag)
 {
-	double wait_next_message_timeout = 0.1; // wait max. 0.1 seconds for the next message (otherwise SickScanApiWaitNext-function return with timeout)
+  double wait_next_message_timeout = 0.1; // wait max. 0.1 seconds for the next message (otherwise SickScanApiWaitNext-function return with timeout)
   SickScanPointCloudMsg pointcloud_msg;
 	SickScanImuMsg imu_msg;
 	SickScanLFErecMsg lferec_msg;
@@ -422,26 +424,50 @@ int sick_scan_api_test_main(int argc, char** argv, const std::string& sick_scan_
 
   // Run main loop
   int user_key = 0;
-#if __ROS_VERSION == 1
-  ros::spin();
-#elif __ROS_VERSION == 0 && defined _MSC_VER
-  while (_kbhit() == 0)
+  char sopas_response_buffer[1024] = { 0 };
+  while (true)
   {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    printf("sick_scan_xd_api_test running. Press ENTER to exit or r for re-initialization\n");
-  }
-  user_key = _getch();
+#if __ROS_VERSION == 1
+    ros::spin();
+#elif __ROS_VERSION == 0 && defined _MSC_VER
+    while (_kbhit() == 0)
+    {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      printf("sick_scan_xd_api_test running. Press ENTER to exit or r for re-initialization\n");
+    }
+    user_key = _getch();
 #else
-  user_key = getchar();
-  getchar();
+    user_key = getchar();
+    getchar();
 #endif
+    printf("sick_scan_xd_api_test: user_key = '%c' (%d)\n", (char)user_key, user_key);
+    const char* sopas_request = 0;
+    if (user_key == 's' || user_key == 'S') // Send sopas command "sRN SCdevicestate", sopas response: "sRA SCdevicestate \x01"
+      sopas_request = "sRN SCdevicestate";
+    // else if (user_key == 'c' || user_key == 'C') // Send sopas command "sRN ContaminationResult" supported by MRS-1000, LMS-1000, multiScan, sopas response: "sRA ContaminationResult \x00\x00"
+    //   sopas_request = "sRN ContaminationResult";
+    if (sopas_request) // Send sopas command and continue
+    {
+      if (SickScanApiSendSOPAS(apiHandle, sopas_request, &sopas_response_buffer[0], (int32_t)sizeof(sopas_response_buffer)) != SICK_SCAN_API_SUCCESS)
+        printf("## WARNING sick_scan_xd_api_test: SickScanApiSendSOPAS(\"%s\") failed\n", sopas_request);
+      else
+        printf("sick_scan_xd_api_test: SickScanApiSendSOPAS(\"%s\") succeeded: response = \"%s\"\n\n", sopas_request, sopas_response_buffer);
+    }
+    else
+    {
+      break;
+    }
+  }
 
   // Cleanup and exit
   printf("sick_scan_xd_api_test finishing...\n");
   if (polling)
   {
     run_polling = false;
-    run_polling_thread->join();
+    if ((ret = SickScanApiClose(apiHandle)) != SICK_SCAN_API_SUCCESS)
+      exitOnError("SickScanApiClose failed", ret);
+    if (run_polling_thread->joinable())
+      run_polling_thread->join();
     delete run_polling_thread;
     run_polling_thread = 0;
   }
@@ -456,9 +482,9 @@ int sick_scan_api_test_main(int argc, char** argv, const std::string& sick_scan_
     SickScanApiDeregisterLdmrsObjectArrayMsg(apiHandle, apiTestLdmrsObjectArrayCallback);
     SickScanApiDeregisterVisualizationMarkerMsg(apiHandle, apiTestVisualizationMarkerMsgCallback);
     SickScanApiDeregisterNavPoseLandmarkMsg(apiHandle, apiTestNavPoseLandmarkMsgCallback);
+    if ((ret = SickScanApiClose(apiHandle)) != SICK_SCAN_API_SUCCESS)
+      exitOnError("SickScanApiClose failed", ret);
   }
-  if ((ret = SickScanApiClose(apiHandle)) != SICK_SCAN_API_SUCCESS)
-    exitOnError("SickScanApiClose failed", ret);
   if ((ret = SickScanApiRelease(apiHandle)) != SICK_SCAN_API_SUCCESS)
     exitOnError("SickScanApiRelease failed", ret);
   if (!polling)
@@ -496,11 +522,24 @@ int main(int argc, char** argv)
   printf("\nsick_scan_xd_api_test started\n");
 
 #ifdef _MSC_VER
-  const char* sick_scan_api_lib = "sick_scan_xd_shared_lib.dll";
+  std::string sick_scan_api_lib = "sick_scan_xd_shared_lib.dll";
+  std::vector<std::string> search_library_path = { "", "build/Debug/", "build_win64/Debug/", "src/build/Debug/", "src/build_win64/Debug/", "src/sick_scan_xd/build/Debug/", "src/sick_scan_xd/build_win64/Debug/", "./", "../" };
 #else
-  const char* sick_scan_api_lib = "libsick_scan_xd_shared_lib.so";
+  std::string sick_scan_api_lib = "libsick_scan_xd_shared_lib.so";
+  std::vector<std::string> search_library_path = { "", "build/", "build_linux/", "src/build/", "src/build_linux/", "src/sick_scan_xd/build/", "src/sick_scan_xd/build_linux/", "./", "../" };
 #endif
-  if ((ret = SickScanApiLoadLibrary(sick_scan_api_lib)) != SICK_SCAN_API_SUCCESS)
+  ret = SICK_SCAN_API_NOT_LOADED;
+  for(int search_library_cnt = 0; search_library_cnt < search_library_path.size(); search_library_cnt++)
+  {
+    std::string libfilepath = search_library_path[search_library_cnt] + sick_scan_api_lib;
+    if ((ret = SickScanApiLoadLibrary(libfilepath.c_str())) == SICK_SCAN_API_SUCCESS)
+    {
+      printf("sick_scan_xd library \"%s\" loaded successfully\n", libfilepath.c_str());
+      sick_scan_api_lib = libfilepath;
+      break;
+    }
+  }
+  if (ret != SICK_SCAN_API_SUCCESS)
     exitOnError("SickScanApiLoadLibrary failed", ret);
 
   // (Re-)Initialize and run sick_scan_xd_api_test
@@ -517,10 +556,25 @@ int main(int argc, char** argv)
   if ((ret = SickScanApiUnloadLibrary()) != SICK_SCAN_API_SUCCESS)
     exitOnError("SickScanApiUnloadLibrary failed", ret);
   printf("sick_scan_xd_api_test finished successfully\n");
+
+  if (false) // Optional test: reload, initialize and run sick_scan_xd_api_test
+  {
+    printf("\nsick_scan_xd_api_test: reload %s\n", sick_scan_api_lib.c_str());
+    if ((ret = SickScanApiLoadLibrary(sick_scan_api_lib.c_str())) != SICK_SCAN_API_SUCCESS)
+      exitOnError("SickScanApiLoadLibrary failed", ret);
+    printf("\nsick_scan_xd_api_test: restart\n");
+    int user_key = 0;
+    do
+    {
+      user_key = sick_scan_api_test_main(argc, argv, sick_scan_args, polling);
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      printf("sick_scan_xd_api_test finished with user key '%c' (%d), re-initialize and repeat sick_scan_xd_api_test ...\n", (char)user_key, user_key);
+    } while (user_key == 'R' || user_key == 'r');
+    printf("sick_scan_xd_api_test finishing...\n");
+    if ((ret = SickScanApiUnloadLibrary()) != SICK_SCAN_API_SUCCESS)
+      exitOnError("SickScanApiUnloadLibrary failed", ret);
+    printf("sick_scan_xd_api_test finished successfully\n");
+  }
+
   exit(EXIT_SUCCESS);
 }
-
-
-
-
-

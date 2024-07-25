@@ -76,6 +76,7 @@
 #include <vector>
 #include <chrono>
 #include <cstdarg>
+#include <cstdint>
 
 #if !defined __ROS_VERSION
 #define __ROS_VERSION 0 // default: native Linux or Windows
@@ -127,6 +128,7 @@ bool shutdownSignalReceived();
 
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/LaserScan.h>
@@ -299,7 +301,7 @@ template <typename T> bool rosGetParam(rosNodePtr nh, const std::string& param_n
     }
     catch(const std::exception& exc)
     {
-        ROS_WARN_STREAM("## ERROR rosGetParam(" << param_name << ", " << paramToString(param_value) << ", " << typeid(param_value).name() << ") failed, " << typeid(exc).name() << ", exception " << exc.what());
+        ROS_WARN_STREAM("## WARNING rosGetParam(" << param_name << ", " << paramToString(param_value) << ", " << typeid(param_value).name() << ") failed, " << typeid(exc).name() << ", exception " << exc.what());
     }
     try
     {
@@ -313,12 +315,12 @@ template <typename T> bool rosGetParam(rosNodePtr nh, const std::string& param_n
         }
         else
         {
-            ROS_WARN_STREAM("## ERROR rosGetParam(" << param_name << ", " << paramToString(param_value) << ") failed.");
+            ROS_WARN_STREAM("## WARNING rosGetParam(" << param_name << ", " << paramToString(param_value) << ") failed.");
         }
     }
     catch(const std::exception& exc)
     {
-        ROS_WARN_STREAM("## ERROR rosGetParam(" << param_name << ", " << paramToString(param_value) << ", " << typeid(param_value).name() << ") failed, " << typeid(exc).name() << ", exception " << exc.what());
+        ROS_WARN_STREAM("## WARNING rosGetParam(" << param_name << ", " << paramToString(param_value) << ", " << typeid(param_value).name() << ") failed, " << typeid(exc).name() << ", exception " << exc.what());
     }
     return false;
 }
@@ -331,7 +333,7 @@ template <typename T> void rosSetParam(rosNodePtr nh, const std::string& param_n
     }
     catch(const std::exception& exc)
     {
-        ROS_WARN_STREAM("## ERROR rosSetParam(" << param_name << ", " << paramToString(param_value) << ", " << typeid(param_value).name() << ") failed, exception " << exc.what());
+        ROS_WARN_STREAM("## WARNING rosSetParam(" << param_name << ", " << paramToString(param_value) << ", " << typeid(param_value).name() << ") failed, exception " << exc.what());
     }
 }
 

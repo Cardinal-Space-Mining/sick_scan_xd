@@ -150,6 +150,7 @@ namespace sick_scansegment_xd
         int scandataformat;                         // ScanDataFormat: 1 for msgpack or 2 for compact scandata, default: 1
         int performanceprofilenumber;               // Set performance profile by sending "sWN PerformanceProfileNumber" if performanceprofilenumber >= 0 (picoScan), default: -1
         bool imu_enable;                            // IMU enabled or disabled
+        std::string imu_topic;                      // ROS topic for IMU messages
         int imu_udp_port;                           // default udp port for multiScan imu data is 7503
         int imu_latency_microsec;                   // imu latency in microseconds
 
@@ -169,7 +170,8 @@ namespace sick_scansegment_xd
         bool host_set_LFPangleRangeFilter;         // False // If true, LFPangleRangeFilter is set at startup (default: false)
         std::string host_LFPlayerFilter;           // "0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1" (Multiscan136 only, not for picoscan) // Optionally set LFPlayerFilter to "<enabled> <layer0-enabled> <layer1-enabled> <layer2-enabled> ... <layer15-enabled>" with 1 for enabled and 0 for disabled
         bool host_set_LFPlayerFilter;              // False // If true (Multiscan136 only, always false for picoscan), LFPlayerFilter is set at startup (default: false)
-
+        std::string host_LFPintervalFilter;           // "0 0" (Multiscan136 only, not for picoscan) // OOptionally set LFPintervalFilter to "<enabled> <N>" with 1 for enabled and 0 for disabled and N to reduce output to every N-th scan
+        bool host_set_LFPintervalFilter;              // False // If true (Multiscan136 only, always false for picoscan), LFPintervalFilter is set at startup (default: false)
         // msgpack validation
         bool msgpack_validator_enabled; // true: check msgpack data for out of bounds and missing scan data, false: no msgpack validation
         int msgpack_validator_verbose;  // 0: print error messages, 1: print error and informational messages, 2: print error and all messages

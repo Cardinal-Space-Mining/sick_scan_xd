@@ -164,6 +164,7 @@ sick_scansegment_xd::Config::Config()
     scandataformat = 2;                      // ScanDataFormat: 1 for msgpack or 2 for compact scandata, default: 2
     performanceprofilenumber = -1;           // Set performance profile by sending "sWN PerformanceProfileNumber" if performanceprofilenumber >= 0 (picoScan), default: -1
     imu_enable = true;                       // IMU enabled or disabled
+    imu_topic = "imu";                       // ROS topic for IMU messages
     imu_udp_port = 7503;                     // default udp port for multiScan imu data is 7503
     imu_latency_microsec = 0;                // imu latency in microseconds
 
@@ -183,9 +184,11 @@ sick_scansegment_xd::Config::Config()
     host_set_LFPangleRangeFilter = false;                       // If true, LFPangleRangeFilter is set at startup (default: false)
     host_LFPlayerFilter = "0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1";  // (Multiscan136 only, not for picoscan) Optionally set LFPlayerFilter to "<enabled> <layer0-enabled> <layer1-enabled> <layer2-enabled> ... <layer15-enabled>" with 1 for enabled and 0 for disabled
     host_set_LFPlayerFilter = false;                            // If true (Multiscan136 only, always false for picoscan), LFPlayerFilter is set at startup (default: false)
+    host_LFPintervalFilter = "0 1";                             // Optionally set LFPintervalFilter to "<enabled> <N>" with 1 for enabled and 0 for disabled and N to reduce output to every N-th scan
+    host_set_LFPintervalFilter = false;                         // If true, LFPintervalFilter is set at startup (default: false)
 
     // msgpack validation default settings
-    msgpack_validator_enabled = true; // true: check msgpack data for out of bounds and missing scan data, false: no msgpack validation
+    msgpack_validator_enabled = false; // true: check msgpack data for out of bounds and missing scan data, false (default): no msgpack validation
     msgpack_validator_verbose = 0;    // 0: print error messages, 1: print error and informational messages, 2: print error and all messages
     msgpack_validator_discard_msgpacks_out_of_bounds = true; // true: msgpacks are discarded if scan data out of bounds detected, false: error message if a msgpack is not validated
     msgpack_validator_check_missing_scandata_interval = 12; //
@@ -236,6 +239,7 @@ void sick_scansegment_xd::Config::PrintHelp(void)
     ROS_INFO_STREAM("-scandataformat=1|2 : set ScanDataFormat, 1 for msgpack or 2 for compact scandata, default: " << scandataformat);
     ROS_INFO_STREAM("-performanceprofilenumber=[1-9] : set PerformanceProfileNumber or -1 to disable, default: " << performanceprofilenumber);
     ROS_INFO_STREAM("-imu_enable=0|1 : enable or disable IMU data, default: " << imu_enable);
+    ROS_INFO_STREAM("-imu_topic=<name> : ROS topic of IMU messages, default: " << imu_topic);
     ROS_INFO_STREAM("-imu_udp_port=<port>: udp port for multiScan imu data, default: " << imu_udp_port);
     ROS_INFO_STREAM("-imu_latency_microsec=<micro_sec>: imu latency in microseconds, default: " << imu_latency_microsec);
 }
@@ -272,6 +276,7 @@ bool sick_scansegment_xd::Config::Init(rosNodePtr _node)
     ROS_DECL_GET_PARAMETER(node, "scandataformat", scandataformat);
     ROS_DECL_GET_PARAMETER(node, "performanceprofilenumber", performanceprofilenumber);    
     ROS_DECL_GET_PARAMETER(node, "imu_enable", imu_enable);
+    ROS_DECL_GET_PARAMETER(node, "imu_topic", imu_topic);
     ROS_DECL_GET_PARAMETER(node, "imu_udp_port", imu_udp_port);
     ROS_DECL_GET_PARAMETER(node, "imu_latency_microsec", imu_latency_microsec);
     ROS_DECL_GET_PARAMETER(node, "sopas_tcp_port", sopas_tcp_port);
@@ -290,11 +295,15 @@ bool sick_scansegment_xd::Config::Init(rosNodePtr _node)
     {
         ROS_DECL_GET_PARAMETER(node, "host_LFPlayerFilter", host_LFPlayerFilter);
         ROS_DECL_GET_PARAMETER(node, "host_set_LFPlayerFilter", host_set_LFPlayerFilter);
+        ROS_DECL_GET_PARAMETER(node, "host_LFPintervalFilter", host_LFPintervalFilter);
+        ROS_DECL_GET_PARAMETER(node, "host_set_LFPintervalFilter", host_set_LFPintervalFilter);
     }
     else
     {
         host_LFPlayerFilter = "";
         host_set_LFPlayerFilter = false;
+        host_LFPintervalFilter = "";
+        host_set_LFPintervalFilter = false;
     }
     // msgpack validation settings
     std::string str_msgpack_validator_required_echos = "0";
@@ -405,13 +414,13 @@ bool sick_scansegment_xd::Config::Init(int argc, char** argv)
     setOptionalArgument(cli_parameter_map, "logfolder", logfolder);
     setOptionalArgument(cli_parameter_map, "hostname", hostname);
     setOptionalArgument(cli_parameter_map, "udp_receiver_ip", udp_receiver_ip);
-    // setOptionalArgument(cli_parameter_map, "port", port);
     // setOptionalArgument(cli_parameter_map, "send_udp_start", send_udp_start);;
     // setOptionalArgument(cli_parameter_map, "send_udp_start_string", send_udp_start_string);
     setOptionalArgument(cli_parameter_map, "udp_timeout_ms", udp_timeout_ms);
     setOptionalArgument(cli_parameter_map, "scandataformat", scandataformat);
     setOptionalArgument(cli_parameter_map, "performanceprofilenumber", performanceprofilenumber);
     setOptionalArgument(cli_parameter_map, "imu_enable", imu_enable);
+    setOptionalArgument(cli_parameter_map, "imu_topic", imu_topic);
     setOptionalArgument(cli_parameter_map, "imu_udp_port", imu_udp_port);
     setOptionalArgument(cli_parameter_map, "imu_latency_microsec", imu_latency_microsec);
     setOptionalArgument(cli_parameter_map, "sopas_tcp_port", sopas_tcp_port);
@@ -427,6 +436,8 @@ bool sick_scansegment_xd::Config::Init(int argc, char** argv)
     setOptionalArgument(cli_parameter_map, "host_set_LFPangleRangeFilter", host_set_LFPangleRangeFilter);
     setOptionalArgument(cli_parameter_map, "host_LFPlayerFilter", host_LFPlayerFilter);
     setOptionalArgument(cli_parameter_map, "host_set_LFPlayerFilter", host_set_LFPlayerFilter);
+    setOptionalArgument(cli_parameter_map, "host_LFPintervalFilter", host_LFPintervalFilter);
+    setOptionalArgument(cli_parameter_map, "host_set_LFPintervalFilter", host_set_LFPintervalFilter);
     setOptionalArgument(cli_parameter_map, "msgpack_validator_enabled", msgpack_validator_enabled);
     setOptionalArgument(cli_parameter_map, "msgpack_validator_verbose", msgpack_validator_verbose);
     setOptionalArgument(cli_parameter_map, "msgpack_validator_discard_msgpacks_out_of_bounds", msgpack_validator_discard_msgpacks_out_of_bounds);
@@ -491,6 +502,7 @@ void sick_scansegment_xd::Config::PrintConfig(void)
     ROS_INFO_STREAM("scandataformat:                   " << scandataformat);
     ROS_INFO_STREAM("performanceprofilenumber:         " << performanceprofilenumber);
     ROS_INFO_STREAM("imu_enable:                       " << imu_enable);
+    ROS_INFO_STREAM("imu_topic:                        " << imu_topic);
     ROS_INFO_STREAM("imu_udp_port:                     " << imu_udp_port);
     ROS_INFO_STREAM("imu_latency_microsec:             " << imu_latency_microsec);
     ROS_INFO_STREAM("sopas_tcp_port:                   " << sopas_tcp_port);
@@ -505,6 +517,8 @@ void sick_scansegment_xd::Config::PrintConfig(void)
     ROS_INFO_STREAM("host_set_LFPangleRangeFilter:     " << host_set_LFPangleRangeFilter);
     ROS_INFO_STREAM("host_LFPlayerFilter:              " << host_LFPlayerFilter);
     ROS_INFO_STREAM("host_set_LFPlayerFilter:          " << host_set_LFPlayerFilter);
+    ROS_INFO_STREAM("host_LFPintervalFilter:           " << host_LFPintervalFilter);
+    ROS_INFO_STREAM("host_set_LFPintervalFilter:       " << host_set_LFPintervalFilter);
     ROS_INFO_STREAM("laserscan_layer_filter:           " << sick_scansegment_xd::util::printVector(laserscan_layer_filter));
     ROS_INFO_STREAM("msgpack_validator_enabled:                         " << msgpack_validator_enabled);
     ROS_INFO_STREAM("msgpack_validator_verbose:                         " << msgpack_validator_verbose);

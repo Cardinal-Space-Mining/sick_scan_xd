@@ -48,6 +48,7 @@ class ColaResponseMap:
             }
         else:
             self.mapped_response = { 
+                "sRN SCdevicestate": "\x02sRA SCdevicestate 1\x03",                 # "sRN SCdevicestate" -> "sRA SCdevicestate 1"
                 "sMN IsSystemReady": "\x02sAN IsSystemReady 1\x03",                 # "sMN IsSystemReady" -> "sAN IsSystemReady 1"
                 "sMN SetAccessMode": "\x02sAN SetAccessMode 1\x03",                 # "sMN SetAccessMode 3 F4724744" -> "sAN SetAccessMode 1"
                 "sMN Run": "\x02sAN Run 1\x03",                                     # "sMN Run" -> "sAN Run 1"
@@ -64,6 +65,7 @@ class ColaResponseMap:
                 "sWN FREchoFilter": "\x02sWA FREchoFilter\x03",                                                        # "sWN FREchoFilter 1" -> "sWA FREchoFilter"
                 "sWN LFPangleRangeFilter": "\x02sWA LFPangleRangeFilter\x03",                                          # "sWN LFPangleRangeFilter 0 C0490FF9 40490FF9 BFC90FF9 3FC90FF9 1" -> "sWA LFPangleRangeFilter"
                 "sWN LFPlayerFilter": "\x02sWA LFPlayerFilter\x03",                                                    # "sWN LFPlayerFilter 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1" -> "sWA LFPlayerFilter"
+                "sWN LFPintervalFilter": "\x02sWA LFPintervalFilter\x03",                                              # "sWN LFPintervalFilter 0 1" -> "sWA LFPintervalFilter"
                 "sRN ContaminationResult": "\x02sRA ContaminationResult 0 0\x03",                                      # "sRN ContaminationResult" -> "sRA ContaminationResult 0 0"
                 "sEN InertialMeasurementUnit": "\x02sEA InertialMeasurementUnit\x03",                                  # "sEN InertialMeasurementUnit" -> "sEA InertialMeasurementUnit"
                 "sWN ImuDataEnable": "\x02sWA ImuDataEnable 1\x03",                                                    # "sWN ImuDataEnable" -> "sWA ImuDataEnable"
