@@ -542,7 +542,7 @@ bool sick_scansegment_xd::MsgPackParser::Parse(std::istream& msgpack_istream, fi
 	bool msgpack_validator_enabled, bool discard_msgpacks_not_validated,
 	bool use_software_pll, bool verbose)
 {
-	int64_t systemtime_nanoseconds = msgpack_timestamp.time_since_epoch().count();
+	int64_t systemtime_nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(msgpack_timestamp.time_since_epoch()).count();
 	uint32_t systemtime_sec = (uint32_t)(systemtime_nanoseconds / 1000000000);  // seconds part of timestamp
 	uint32_t systemtime_nsec = (uint32_t)(systemtime_nanoseconds % 1000000000); // nanoseconds part of timestamp
 	result.timestamp = sick_scansegment_xd::Timestamp(systemtime_sec, systemtime_nsec); // Timestamp(std::chrono::system_clock::now()); // default timestamp: msgpack receive time, overwritten by timestamp from msgpack data

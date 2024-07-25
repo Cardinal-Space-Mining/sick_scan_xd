@@ -192,6 +192,17 @@ namespace sick_scansegment_xd
             }
         }
 
+        /** Force stop a any blocking Receive()'s by enabling the exit condition and shutting down the recv socket */
+        void ForceStop() {
+            m_force_quit = true;
+#if defined WIN32 || defined _MSC_VER
+            closesocket(m_udp_socket);
+            m_udp_socket = INVALID_SOCKET;
+#else
+            shutdown(m_udp_socket, SHUT_RDWR);
+#endif
+        }
+
         /** Reads blocking until some data has been received successfully or an error occurs. Returns the number of bytes received. */
         size_t Receive(std::vector<uint8_t>& msg_payload)
         {
